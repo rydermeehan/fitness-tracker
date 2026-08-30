@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Atomic — a habit system from Atomic Habits</title>
+<meta name="description" content="Build habits with the Four Laws of Behavior Change: cue, craving, response, reward. Offline, private, no account.">
+<meta name="theme-color" content="#0e1116">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚛️</text></svg>">
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">⚛</span>
+      <span class="brand-text">Atomic</span>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Sections">
+      <button class="tab" role="tab" data-view="today"><span class="tab-ico">◎</span>Today</button>
+      <button class="tab" role="tab" data-view="habits"><span class="tab-ico">☰</span>Habits</button>
+      <button class="tab" role="tab" data-view="scorecard"><span class="tab-ico">±</span>Scorecard</button>
+      <button class="tab" role="tab" data-view="progress"><span class="tab-ico">▲</span>Progress</button>
+      <button class="tab" role="tab" data-view="guide"><span class="tab-ico">✦</span>Guide</button>
+    </nav>
+    <div class="topbar-actions">
+      <button class="icon-btn" id="theme-toggle" title="Toggle light / dark" aria-label="Toggle light or dark theme">
+        <svg width="17" height="17" viewBox="0 0 20 20" aria-hidden="true" fill="none">
+          <circle cx="10" cy="10" r="7.5" stroke="currentColor" stroke-width="1.6"/>
+          <path d="M10 2.5a7.5 7.5 0 0 1 0 15z" fill="currentColor"/>
+        </svg>
+      </button>
+      <button class="btn btn-primary" id="new-habit-btn">New habit</button>
+    </div>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+  <section class="view" id="view-today" hidden></section>
+  <section class="view" id="view-habits" hidden></section>
+  <section class="view" id="view-scorecard" hidden></section>
+  <section class="view" id="view-progress" hidden></section>
+  <section class="view" id="view-guide" hidden></section>
+</main>
+
+<footer class="wrap foot">
+  <p>Everything is stored in this browser only. Nothing leaves your device.</p>
+  <p class="foot-links">
+    <button class="link" id="export-btn">Export data</button>
+    <button class="link" id="import-btn">Import data</button>
+    <button class="link danger" id="reset-btn">Erase everything</button>
+  </p>
+  <input type="file" id="import-file" accept="application/json,.json" hidden>
+</footer>
+
+<!-- Habit editor -->
+<div class="modal" id="editor" hidden>
+  <div class="modal-backdrop" data-close></div>
+  <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="editor-title">
+    <header class="modal-head">
+      <h2 id="editor-title">New habit</h2>
+      <button class="icon-btn" data-close aria-label="Close">✕</button>
+    </header>
+    <div class="modal-body" id="editor-body"></div>
+    <footer class="modal-foot">
+      <button class="btn ghost" data-close>Cancel</button>
+      <button class="btn btn-primary" id="editor-save">Save habit</button>
+    </footer>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<script src="js/logic.js"></script>
+<script src="js/store.js"></script>
+<script src="js/templates.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

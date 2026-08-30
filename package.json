@@ -1,0 +1,11 @@
+{
+  "name": "atomic",
+  "version": "1.0.0",
+  "description": "A habit tracker built on the Four Laws of Behavior Change from Atomic Habits. No dependencies, no build step, no server.",
+  "private": true,
+  "scripts": {
+    "test": "node tests/run.js",
+    "start": "python3 -m http.server 8000"
+  },
+  "license": "MIT"
+}
