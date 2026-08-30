@@ -1,0 +1,806 @@
+<title>1% Better</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..700&family=Instrument+Sans:ital,wght@0,400..700;1,400..700&display=swap">
+<style>
+  :root {
+    --ground: #f5f6f8;
+    --surface: #ffffff;
+    --surface-2: #eceef3;
+    --ink: #1c2130;
+    --ink-soft: #5a6172;
+    --ink-faint: #9aa1b1;
+    --line: #dde0e8;
+    --accent: #2f4aa8;
+    --accent-soft: #e4e9f7;
+    --done: #2e7d5b;
+    --done-soft: #e0efe8;
+    --warn: #a06a12;
+    --warn-soft: #f6ecd8;
+    --danger: #c2483c;
+    --danger-soft: #f7e4e2;
+    --cell-empty: #e6e8ee;
+    --shadow: 0 1px 2px rgba(28, 33, 48, 0.06), 0 4px 16px rgba(28, 33, 48, 0.05);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #12151c;
+      --surface: #1a1e28;
+      --surface-2: #232837;
+      --ink: #e8eaf1;
+      --ink-soft: #a4abbd;
+      --ink-faint: #6b7387;
+      --line: #2d3345;
+      --accent: #8ba1e8;
+      --accent-soft: #232c4a;
+      --done: #6fbf9a;
+      --done-soft: #1d3a2e;
+      --warn: #d9a84e;
+      --warn-soft: #3a2f17;
+      --danger: #e08278;
+      --danger-soft: #43221f;
+      --cell-empty: #252a38;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 4px 16px rgba(0, 0, 0, 0.3);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #12151c;
+    --surface: #1a1e28;
+    --surface-2: #232837;
+    --ink: #e8eaf1;
+    --ink-soft: #a4abbd;
+    --ink-faint: #6b7387;
+    --line: #2d3345;
+    --accent: #8ba1e8;
+    --accent-soft: #232c4a;
+    --done: #6fbf9a;
+    --done-soft: #1d3a2e;
+    --warn: #d9a84e;
+    --warn-soft: #3a2f17;
+    --danger: #e08278;
+    --danger-soft: #43221f;
+    --cell-empty: #252a38;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 4px 16px rgba(0, 0, 0, 0.3);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: "Instrument Sans", "Segoe UI", system-ui, sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  .serif { font-family: "Newsreader", Georgia, serif; }
+
+  .app { max-width: 680px; margin: 0 auto; padding: 24px 20px 80px; }
+
+  /* ---------- header ---------- */
+  header { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 4px; }
+  .wordmark { font-family: "Newsreader", Georgia, serif; font-weight: 600; font-size: 22px; letter-spacing: -0.01em; }
+  .wordmark em { color: var(--accent); font-style: italic; }
+  .header-tools { display: flex; gap: 4px; }
+  .icon-btn {
+    border: none; background: none; color: var(--ink-faint); cursor: pointer;
+    font: inherit; font-size: 13px; padding: 4px 8px; border-radius: 6px;
+  }
+  .icon-btn:hover { color: var(--ink); background: var(--surface-2); }
+
+  .identity-banner {
+    font-family: "Newsreader", Georgia, serif; font-style: italic;
+    font-size: 19px; line-height: 1.45; color: var(--ink-soft);
+    margin: 18px 0 26px; max-width: 34em; text-wrap: balance;
+  }
+  .identity-banner strong { color: var(--ink); font-weight: 600; }
+
+  /* ---------- tabs ---------- */
+  nav { display: flex; gap: 2px; border-bottom: 1px solid var(--line); margin-bottom: 24px; }
+  nav button {
+    font: inherit; font-weight: 500; background: none; border: none; cursor: pointer;
+    color: var(--ink-faint); padding: 8px 14px 10px; position: relative;
+  }
+  nav button[aria-selected="true"] { color: var(--ink); }
+  nav button[aria-selected="true"]::after {
+    content: ""; position: absolute; left: 10px; right: 10px; bottom: -1px;
+    height: 2px; background: var(--accent);
+  }
+  nav button:focus-visible, .icon-btn:focus-visible, .habit-check:focus-visible,
+  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* ---------- today ---------- */
+  .today-date { color: var(--ink-faint); font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; margin: 0 0 14px; }
+  .today-list { display: flex; flex-direction: column; gap: 10px; }
+
+  .habit-row {
+    display: flex; align-items: center; gap: 14px;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 16px; box-shadow: var(--shadow); transition: opacity 0.15s;
+  }
+  .habit-row.done-row { opacity: 0.72; }
+  .habit-check {
+    flex: none; width: 30px; height: 30px; border-radius: 50%;
+    border: 2px solid var(--ink-faint); background: none; cursor: pointer;
+    display: grid; place-items: center; color: transparent; transition: all 0.12s;
+    font-size: 15px; line-height: 1; padding: 0;
+  }
+  .habit-check:hover { border-color: var(--done); }
+  .habit-check.checked { background: var(--done); border-color: var(--done); color: #fff; }
+  .habit-main { flex: 1; min-width: 0; }
+  .habit-name { font-weight: 600; }
+  .habit-row.done-row .habit-name { text-decoration: line-through; text-decoration-thickness: 1px; }
+  .habit-sub { font-size: 13px; color: var(--ink-soft); margin-top: 1px; }
+  .habit-sub .twomin { color: var(--accent); }
+  .streak-chip {
+    flex: none; font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums;
+    color: var(--ink-soft); background: var(--surface-2); border-radius: 999px; padding: 3px 10px;
+  }
+  .streak-chip.hot { color: var(--warn); background: var(--warn-soft); }
+
+  .slip-note {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    border-radius: 10px; padding: 10px 14px; font-size: 13.5px; margin-bottom: 14px;
+  }
+  .slip-note.gentle { background: var(--warn-soft); color: var(--warn); }
+  .slip-note.urgent { background: var(--danger-soft); color: var(--danger); }
+  .slip-note button {
+    font: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
+    border: 1px solid currentColor; background: none; color: inherit;
+    border-radius: 999px; padding: 2px 12px;
+  }
+
+  .day-summary { margin-top: 22px; font-size: 13.5px; color: var(--ink-faint); }
+
+  /* ---------- empty state ---------- */
+  .empty {
+    text-align: center; padding: 48px 24px; background: var(--surface);
+    border: 1px dashed var(--line); border-radius: 14px;
+  }
+  .empty h2 { font-family: "Newsreader", Georgia, serif; font-weight: 600; font-size: 24px; margin: 0 0 8px; }
+  .empty p { color: var(--ink-soft); max-width: 30em; margin: 0 auto 20px; }
+
+  /* ---------- buttons ---------- */
+  .btn {
+    font: inherit; font-weight: 600; cursor: pointer; border-radius: 10px;
+    padding: 9px 18px; border: 1px solid transparent;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { filter: brightness(1.08); }
+  .btn-ghost { background: none; border-color: var(--line); color: var(--ink); }
+  .btn-ghost:hover { background: var(--surface-2); }
+  .btn-danger { background: none; border-color: var(--danger); color: var(--danger); }
+
+  /* ---------- habits tab ---------- */
+  .habits-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  .habits-head h2 { font-size: 15px; font-weight: 600; margin: 0; color: var(--ink-soft); }
+  .habit-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+    box-shadow: var(--shadow); margin-bottom: 12px; overflow: hidden;
+  }
+  .habit-card summary {
+    list-style: none; cursor: pointer; padding: 14px 16px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .habit-card summary::-webkit-details-marker { display: none; }
+  .habit-card summary .habit-name { flex: 1; }
+  .habit-card .days-label { font-size: 12px; color: var(--ink-faint); letter-spacing: 0.04em; }
+  .law-list { padding: 4px 16px 14px; border-top: 1px solid var(--line); }
+  .law-item { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .law-item:last-child { border-bottom: none; }
+  .law-tag {
+    flex: none; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em;
+    color: var(--accent); width: 92px; padding-top: 2px;
+  }
+  .law-text { color: var(--ink-soft); font-size: 14px; }
+  .law-text b { color: var(--ink); font-weight: 600; }
+  .card-actions { display: flex; gap: 8px; padding: 0 16px 14px; }
+  .card-actions .btn { padding: 5px 14px; font-size: 13px; }
+
+  /* ---------- progress tab ---------- */
+  .progress-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+    box-shadow: var(--shadow); padding: 16px; margin-bottom: 14px;
+  }
+  .progress-top { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
+  .progress-top .habit-name { font-size: 15px; }
+  .stat-row { display: flex; gap: 22px; margin: 6px 0 14px; flex-wrap: wrap; }
+  .stat { font-size: 13px; color: var(--ink-faint); }
+  .stat b { display: block; font-size: 19px; font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .heatmap-scroll { overflow-x: auto; padding-bottom: 4px; }
+  .heatmap { display: grid; grid-auto-flow: column; grid-template-rows: repeat(7, 11px); gap: 3px; width: max-content; }
+  .heatmap i {
+    width: 11px; height: 11px; border-radius: 2.5px; background: var(--cell-empty);
+  }
+  .heatmap i.off { background: none; border: 1px solid var(--cell-empty); }
+  .heatmap i.hit { background: var(--done); }
+  .heatmap i.future { background: none; }
+  .compound-card h3 { font-family: "Newsreader", Georgia, serif; font-weight: 600; font-size: 19px; margin: 0 0 2px; }
+  .compound-card p { color: var(--ink-soft); font-size: 13.5px; margin: 0 0 12px; max-width: 40em; }
+  #compoundChart { width: 100%; height: 180px; display: block; }
+
+  /* ---------- modal ---------- */
+  .overlay {
+    position: fixed; inset: 0; background: rgba(15, 18, 28, 0.45);
+    display: grid; place-items: center; padding: 20px; z-index: 10; overflow-y: auto;
+  }
+  .modal {
+    background: var(--surface); border-radius: 16px; box-shadow: var(--shadow);
+    width: 100%; max-width: 520px; padding: 24px; margin: auto;
+  }
+  .modal h2 { font-family: "Newsreader", Georgia, serif; font-weight: 600; font-size: 22px; margin: 0 0 4px; }
+  .modal .modal-sub { color: var(--ink-soft); font-size: 13.5px; margin: 0 0 18px; }
+  .law-section { border-top: 1px solid var(--line); padding: 14px 0; }
+  .law-section > .law-head {
+    font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em;
+    color: var(--accent); margin-bottom: 10px;
+  }
+  .field { margin-bottom: 12px; }
+  .field:last-child { margin-bottom: 0; }
+  .field label { display: block; font-size: 13px; font-weight: 500; color: var(--ink-soft); margin-bottom: 4px; }
+  .field input[type="text"], .field textarea {
+    width: 100%; font: inherit; font-size: 14px; color: var(--ink);
+    background: var(--ground); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px;
+  }
+  .field input:focus, .field textarea:focus { outline: none; border-color: var(--accent); }
+  .field .hint { font-size: 12px; color: var(--ink-faint); margin-top: 3px; }
+  .sentence-preview {
+    font-family: "Newsreader", Georgia, serif; font-style: italic; font-size: 15px;
+    color: var(--ink); background: var(--accent-soft); border-radius: 8px; padding: 10px 12px; margin-top: 8px;
+  }
+  .day-picker { display: flex; gap: 6px; }
+  .day-picker button {
+    font: inherit; font-size: 12.5px; font-weight: 600; width: 38px; height: 32px;
+    border-radius: 8px; border: 1px solid var(--line); background: none; color: var(--ink-faint); cursor: pointer;
+  }
+  .day-picker button.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+  .modal textarea.io { min-height: 140px; font-family: ui-monospace, monospace; font-size: 12px; resize: vertical; }
+
+  /* ---------- toast ---------- */
+  #toast {
+    position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%) translateY(8px);
+    background: var(--ink); color: var(--ground); font-size: 14px;
+    border-radius: 999px; padding: 9px 20px; opacity: 0; pointer-events: none;
+    transition: opacity 0.2s, transform 0.2s; z-index: 20; max-width: 90vw; text-align: center;
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  #toast .serif { font-style: italic; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+</style>
+
+<div class="app">
+  <header>
+    <div class="wordmark">1<em>%</em> Better</div>
+    <div class="header-tools">
+      <button class="icon-btn" id="exportBtn" title="Back up or move your data">Export</button>
+      <button class="icon-btn" id="importBtn">Import</button>
+    </div>
+  </header>
+
+  <p class="identity-banner" id="identityBanner"></p>
+
+  <nav role="tablist">
+    <button role="tab" data-tab="today" aria-selected="true">Today</button>
+    <button role="tab" data-tab="habits" aria-selected="false">Habits</button>
+    <button role="tab" data-tab="progress" aria-selected="false">Progress</button>
+  </nav>
+
+  <main id="view"></main>
+</div>
+
+<div id="toast" role="status"></div>
+<div id="modalRoot"></div>
+
+<script>
+"use strict";
+
+/* ================= storage ================= */
+const STORE_KEY = "onepercent.v1";
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    if (raw) {
+      const s = JSON.parse(raw);
+      if (s && Array.isArray(s.habits) && s.log && typeof s.log === "object") return s;
+    }
+  } catch (e) { /* storage unavailable or corrupt: start fresh */ }
+  return { habits: [], log: {} };
+}
+function saveState() {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
+  catch (e) { /* private mode etc. — app still works for the session */ }
+}
+let state = loadState();
+
+/* ================= dates ================= */
+const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+function iso(d) {
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+}
+function daysAgo(n) { const d = new Date(); d.setDate(d.getDate() - n); return d; }
+function todayIso() { return iso(new Date()); }
+
+function isDone(habitId, dateIso) {
+  const day = state.log[dateIso];
+  return !!(day && day.indexOf(habitId) !== -1);
+}
+function setDone(habitId, dateIso, done) {
+  let day = state.log[dateIso] || [];
+  if (done && day.indexOf(habitId) === -1) day = day.concat(habitId);
+  if (!done) day = day.filter(id => id !== habitId);
+  if (day.length) state.log[dateIso] = day; else delete state.log[dateIso];
+  saveState();
+}
+function scheduledOn(habit, date) { return habit.days.indexOf(date.getDay()) !== -1; }
+
+/* ================= stats ================= */
+function streak(habit) {
+  // Count back over scheduled days; today only counts if already done.
+  let n = 0;
+  for (let i = 0; i < 3660; i++) {
+    const d = daysAgo(i);
+    if (iso(d) < habit.createdAt && i > 0) break;
+    if (!scheduledOn(habit, d)) continue;
+    if (isDone(habit.id, iso(d))) { n++; continue; }
+    if (i === 0) continue; // today isn't over yet
+    break;
+  }
+  return n;
+}
+function bestStreak(habit) {
+  let best = 0, cur = 0;
+  const start = new Date(habit.createdAt + "T12:00:00");
+  const today = new Date();
+  for (let d = new Date(start); iso(d) <= iso(today); d.setDate(d.getDate() + 1)) {
+    if (!scheduledOn(habit, d)) continue;
+    if (isDone(habit.id, iso(d))) { cur++; best = Math.max(best, cur); }
+    else if (iso(d) !== todayIso()) cur = 0;
+  }
+  return Math.max(best, streak(habit));
+}
+function totals(habit) {
+  let done = 0, scheduled = 0;
+  const start = new Date(habit.createdAt + "T12:00:00");
+  const today = new Date();
+  for (let d = new Date(start); iso(d) <= iso(today); d.setDate(d.getDate() + 1)) {
+    if (!scheduledOn(habit, d)) continue;
+    scheduled++;
+    if (isDone(habit.id, iso(d))) done++;
+  }
+  return { done, scheduled };
+}
+function missedYesterday(habit) {
+  const y = daysAgo(1);
+  return iso(y) >= habit.createdAt && scheduledOn(habit, y) && !isDone(habit.id, iso(y));
+}
+function missedTwice(habit) {
+  if (!missedYesterday(habit)) return false;
+  const d2 = daysAgo(2);
+  return iso(d2) >= habit.createdAt && scheduledOn(habit, d2) && !isDone(habit.id, iso(d2));
+}
+
+/* ================= helpers ================= */
+function esc(s) {
+  return String(s == null ? "" : s).replace(/[&<>"']/g, c =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+let toastTimer = null;
+function toast(html) {
+  const t = document.getElementById("toast");
+  t.innerHTML = html;
+  t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("show"), 2600);
+}
+function daysLabel(days) {
+  if (days.length === 7) return "Every day";
+  if (days.length === 5 && days.indexOf(0) === -1 && days.indexOf(6) === -1) return "Weekdays";
+  if (days.length === 2 && days.indexOf(0) !== -1 && days.indexOf(6) !== -1) return "Weekends";
+  return days.slice().sort((a, b) => a - b).map(d => DAY_NAMES[d]).join(" · ");
+}
+
+/* ================= identity banner ================= */
+function renderBanner() {
+  const el = document.getElementById("identityBanner");
+  const ids = [...new Set(state.habits.map(h => (h.identity || "").trim()).filter(Boolean))];
+  if (!ids.length) {
+    el.innerHTML = "Every action you take is a vote for the type of person you wish to become.";
+    return;
+  }
+  const votes = state.habits.reduce((n, h) => n + totals(h).done, 0);
+  const list = ids.slice(0, 3).map(s => "<strong>" + esc(s) + "</strong>").join(", ");
+  el.innerHTML = "You are becoming " + list + (ids.length > 3 ? ", …" : "") +
+    " — <strong>" + votes + "</strong> vote" + (votes === 1 ? "" : "s") + " cast so far.";
+}
+
+/* ================= tabs ================= */
+let activeTab = "today";
+document.querySelectorAll("nav [role=tab]").forEach(btn => {
+  btn.addEventListener("click", () => {
+    activeTab = btn.dataset.tab;
+    document.querySelectorAll("nav [role=tab]").forEach(b =>
+      b.setAttribute("aria-selected", String(b === btn)));
+    render();
+  });
+});
+
+function render() {
+  renderBanner();
+  const view = document.getElementById("view");
+  if (!state.habits.length && activeTab !== "habits") {
+    view.innerHTML =
+      '<div class="empty"><h2>Start with one small habit</h2>' +
+      "<p>You do not rise to the level of your goals — you fall to the level of your systems. " +
+      "Build your first habit with the Four Laws, scaled down to two minutes.</p>" +
+      '<button class="btn btn-primary" id="emptyAdd">Design your first habit</button></div>';
+    document.getElementById("emptyAdd").addEventListener("click", () => openHabitForm(null));
+    return;
+  }
+  if (activeTab === "today") renderToday(view);
+  else if (activeTab === "habits") renderHabits(view);
+  else renderProgress(view);
+}
+
+/* ================= today ================= */
+function renderToday(view) {
+  const now = new Date();
+  const dateLine = now.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
+  const todays = state.habits.filter(h => scheduledOn(h, now));
+  let html = '<p class="today-date">' + esc(dateLine) + "</p>";
+
+  // Never-miss-twice notes
+  for (const h of state.habits) {
+    if (missedTwice(h)) {
+      html += '<div class="slip-note urgent"><span>Second miss on <b>' + esc(h.name) +
+        "</b>. Missing once is an accident; missing twice is the start of a new habit. Get back on track today.</span></div>";
+    } else if (missedYesterday(h)) {
+      html += '<div class="slip-note gentle"><span>You missed <b>' + esc(h.name) +
+        '</b> yesterday. Never miss twice.</span><button data-catchup="' + h.id + '">I actually did it</button></div>';
+    }
+  }
+
+  if (!todays.length) {
+    html += '<div class="empty"><h2>Rest day</h2><p>Nothing scheduled today. Your chains are safe.</p></div>';
+  } else {
+    html += '<div class="today-list">';
+    for (const h of todays) {
+      const done = isDone(h.id, todayIso());
+      const s = streak(h);
+      html +=
+        '<div class="habit-row' + (done ? " done-row" : "") + '">' +
+        '<button class="habit-check' + (done ? " checked" : "") + '" data-check="' + h.id +
+        '" aria-label="' + (done ? "Undo " : "Complete ") + esc(h.name) + '">✓</button>' +
+        '<div class="habit-main"><div class="habit-name">' + esc(h.name) + "</div>" +
+        '<div class="habit-sub">' +
+        (h.twoMin ? 'Just start: <span class="twomin">' + esc(h.twoMin) + "</span>" : esc(cueSentence(h) || "")) +
+        "</div></div>" +
+        '<span class="streak-chip' + (s >= 7 ? " hot" : "") + '" title="Current streak">' +
+        (s > 0 ? s + "d chain" : "no chain") + "</span></div>";
+    }
+    html += "</div>";
+    const doneCount = todays.filter(h => isDone(h.id, todayIso())).length;
+    html += '<p class="day-summary">' +
+      (doneCount === todays.length
+        ? "All " + todays.length + " done. The person you're becoming showed up today."
+        : doneCount + " of " + todays.length + " done — each one is a small vote.") + "</p>";
+  }
+  view.innerHTML = html;
+
+  view.querySelectorAll("[data-check]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const h = state.habits.find(x => x.id === btn.dataset.check);
+      const was = isDone(h.id, todayIso());
+      setDone(h.id, todayIso(), !was);
+      if (!was) {
+        toast(h.identity
+          ? '✓ A vote for <span class="serif">' + esc(h.identity) + "</span>"
+          : "✓ Vote cast. The chain grows.");
+      }
+      render();
+    });
+  });
+  view.querySelectorAll("[data-catchup]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      setDone(btn.dataset.catchup, iso(daysAgo(1)), true);
+      toast("Chain repaired.");
+      render();
+    });
+  });
+}
+
+function cueSentence(h) {
+  if (h.stack) return "After I " + h.stack + ", I will " + lc(h.name) + ".";
+  if (h.time || h.location) {
+    return "I will " + lc(h.name) +
+      (h.time ? " at " + h.time : "") + (h.location ? " in " + h.location : "") + ".";
+  }
+  return "";
+}
+function lc(s) { return s ? s.charAt(0).toLowerCase() + s.slice(1) : s; }
+
+/* ================= habits tab ================= */
+function renderHabits(view) {
+  let html = '<div class="habits-head"><h2>' + state.habits.length + " habit" +
+    (state.habits.length === 1 ? "" : "s") + '</h2>' +
+    '<button class="btn btn-primary" id="addHabit">New habit</button></div>';
+
+  if (!state.habits.length) {
+    html += '<div class="empty"><h2>Design a habit, don’t just wish for one</h2>' +
+      "<p>Each habit here is built with the Four Laws of Behavior Change: make it obvious, attractive, easy, and satisfying.</p></div>";
+  }
+
+  for (const h of state.habits) {
+    const laws = [];
+    if (h.identity) laws.push(["Identity", "I am becoming <b>" + esc(h.identity) + "</b>."]);
+    const cue = cueSentence(h);
+    if (cue) laws.push(["1 · Obvious", esc(cue)]);
+    if (h.bundle) laws.push(["2 · Attractive", "Pair it with <b>" + esc(h.bundle) + "</b>."]);
+    if (h.twoMin) laws.push(["3 · Easy", "Two-minute version: <b>" + esc(h.twoMin) + "</b>."]);
+    laws.push(["4 · Satisfying", "Check it off and watch the chain grow — never miss twice."]);
+
+    html += '<details class="habit-card"><summary>' +
+      '<span class="habit-name">' + esc(h.name) + "</span>" +
+      '<span class="days-label">' + esc(daysLabel(h.days)) + "</span></summary>" +
+      '<div class="law-list">' +
+      laws.map(l => '<div class="law-item"><span class="law-tag">' + l[0] +
+        '</span><span class="law-text">' + l[1] + "</span></div>").join("") +
+      "</div>" +
+      '<div class="card-actions"><button class="btn btn-ghost" data-edit="' + h.id + '">Edit</button>' +
+      '<button class="btn btn-danger" data-del="' + h.id + '">Delete</button></div></details>';
+  }
+  view.innerHTML = html;
+
+  document.getElementById("addHabit").addEventListener("click", () => openHabitForm(null));
+  view.querySelectorAll("[data-edit]").forEach(b =>
+    b.addEventListener("click", () => openHabitForm(state.habits.find(h => h.id === b.dataset.edit))));
+  view.querySelectorAll("[data-del]").forEach(b =>
+    b.addEventListener("click", () => {
+      const h = state.habits.find(x => x.id === b.dataset.del);
+      if (!confirm('Delete "' + h.name + '" and its history?')) return;
+      state.habits = state.habits.filter(x => x.id !== h.id);
+      for (const k of Object.keys(state.log)) {
+        state.log[k] = state.log[k].filter(id => id !== h.id);
+        if (!state.log[k].length) delete state.log[k];
+      }
+      saveState(); render();
+    }));
+}
+
+/* ================= progress tab ================= */
+function renderProgress(view) {
+  let html = "";
+  for (const h of state.habits) {
+    const t = totals(h);
+    const pct = t.scheduled ? Math.round((t.done / t.scheduled) * 100) : 0;
+    html += '<div class="progress-card">' +
+      '<div class="progress-top"><span class="habit-name">' + esc(h.name) + "</span>" +
+      '<span class="days-label">' + esc(daysLabel(h.days)) + "</span></div>" +
+      '<div class="stat-row">' +
+      '<span class="stat"><b>' + streak(h) + "</b>current chain</span>" +
+      '<span class="stat"><b>' + bestStreak(h) + "</b>best chain</span>" +
+      '<span class="stat"><b>' + t.done + "</b>votes cast</span>" +
+      '<span class="stat"><b>' + pct + "%</b>kept</span></div>" +
+      '<div class="heatmap-scroll"><div class="heatmap">' + heatmapCells(h) + "</div></div></div>";
+  }
+
+  const totalVotes = state.habits.reduce((n, h) => n + totals(h).done, 0);
+  html += '<div class="progress-card compound-card"><h3>The compounding curve</h3>' +
+    "<p>1% better every day for a year is 1.01<sup>365</sup> ≈ 37×. 1% worse is 0.99<sup>365</sup> ≈ 0.03. " +
+    "Habits are the compound interest of self-improvement — you’ve made <b>" + totalVotes +
+    "</b> deposit" + (totalVotes === 1 ? "" : "s") +
+    ' so far.</p><canvas id="compoundChart"></canvas></div>';
+
+  view.innerHTML = html;
+  drawCompound(totalVotes);
+}
+
+function heatmapCells(h) {
+  // 15 weeks, columns = weeks, rows = Sun..Sat, ending this week.
+  const today = new Date();
+  const end = new Date(today); end.setDate(end.getDate() + (6 - end.getDay())); // this week's Saturday
+  const start = new Date(end); start.setDate(start.getDate() - (15 * 7 - 1));
+  let cells = "";
+  for (let w = 0; w < 15; w++) {
+    for (let r = 0; r < 7; r++) {
+      const d = new Date(start); d.setDate(start.getDate() + w * 7 + r);
+      const dIso = iso(d);
+      let cls = "", tip = d.toLocaleDateString();
+      if (dIso > todayIso()) cls = "future";
+      else if (dIso < h.createdAt) cls = "future";
+      else if (!scheduledOn(h, d)) cls = "off";
+      else if (isDone(h.id, dIso)) { cls = "hit"; tip += " — done"; }
+      else tip += " — missed";
+      cells += '<i class="' + cls + '" title="' + esc(tip) + '"></i>';
+    }
+  }
+  return cells;
+}
+
+function drawCompound(votes) {
+  const canvas = document.getElementById("compoundChart");
+  if (!canvas) return;
+  const css = getComputedStyle(document.documentElement);
+  const W = canvas.clientWidth, H = canvas.clientHeight || 180;
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = W * dpr; canvas.height = H * dpr;
+  const ctx = canvas.getContext("2d");
+  ctx.scale(dpr, dpr);
+  const pad = { l: 8, r: 8, t: 12, b: 18 };
+  const days = 365, maxY = Math.pow(1.01, days);
+  const X = x => pad.l + (x / days) * (W - pad.l - pad.r);
+  const Y = y => H - pad.b - (Math.log(Math.max(y, 0.02)) - Math.log(0.02)) / (Math.log(maxY) - Math.log(0.02)) * (H - pad.t - pad.b);
+
+  ctx.strokeStyle = css.getPropertyValue("--line").trim();
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(pad.l, Y(1)); ctx.lineTo(W - pad.r, Y(1)); ctx.stroke();
+
+  function curve(rate, color) {
+    ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.beginPath();
+    for (let x = 0; x <= days; x += 2) {
+      const px = X(x), py = Y(Math.pow(rate, x));
+      x === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+  }
+  const good = css.getPropertyValue("--done").trim();
+  const bad = css.getPropertyValue("--danger").trim();
+  curve(1.01, good);
+  curve(0.99, bad);
+
+  const ink = css.getPropertyValue("--ink-soft").trim();
+  ctx.fillStyle = ink;
+  ctx.font = "11px 'Instrument Sans', sans-serif";
+  ctx.fillText("1% better → 37×", X(days) - 92, Y(Math.pow(1.01, days)) + 14);
+  ctx.fillText("1% worse → ~0", X(days) - 84, Y(0.03) - 6);
+  ctx.fillText("day 0", pad.l, H - 5);
+  ctx.fillText("day 365", W - pad.r - 42, H - 5);
+
+  // marker: where you are on the curve, by votes cast (capped at 365)
+  if (votes > 0) {
+    const vx = Math.min(votes, days);
+    ctx.fillStyle = css.getPropertyValue("--accent").trim();
+    ctx.beginPath(); ctx.arc(X(vx), Y(Math.pow(1.01, vx)), 4, 0, Math.PI * 2); ctx.fill();
+    ctx.fillText("you", X(vx) + 7, Y(Math.pow(1.01, vx)) - 4);
+  }
+}
+
+/* ================= habit form ================= */
+function openHabitForm(existing) {
+  const h = existing || { name: "", identity: "", time: "", location: "", stack: "", bundle: "", twoMin: "", days: [0, 1, 2, 3, 4, 5, 6] };
+  const days = new Set(h.days);
+  const root = document.getElementById("modalRoot");
+  root.innerHTML =
+    '<div class="overlay"><div class="modal" role="dialog" aria-modal="true">' +
+    "<h2>" + (existing ? "Edit habit" : "Design a habit") + "</h2>" +
+    '<p class="modal-sub">Built with the Four Laws of Behavior Change.</p>' +
+
+    '<div class="field"><label for="fName">Habit</label>' +
+    '<input type="text" id="fName" placeholder="e.g. Go for a run" value="' + esc(h.name) + '"></div>' +
+
+    '<div class="law-section"><div class="law-head">Identity — who does this make you?</div>' +
+    '<div class="field"><label for="fIdentity">I am becoming…</label>' +
+    '<input type="text" id="fIdentity" placeholder="e.g. a runner" value="' + esc(h.identity) + '">' +
+    '<div class="hint">The goal isn’t to run a marathon; it’s to become a runner. Every completion is a vote.</div></div></div>' +
+
+    '<div class="law-section"><div class="law-head">Law 1 · Make it obvious</div>' +
+    '<div class="field"><label for="fStack">Habit stack — after I… (optional)</label>' +
+    '<input type="text" id="fStack" placeholder="e.g. pour my morning coffee" value="' + esc(h.stack) + '"></div>' +
+    '<div class="field"><label for="fTime">Or an implementation intention — when &amp; where (optional)</label>' +
+    '<input type="text" id="fTime" placeholder="Time, e.g. 7:00 am" value="' + esc(h.time) + '">' +
+    '<input type="text" id="fLocation" placeholder="Place, e.g. the park" value="' + esc(h.location) + '" style="margin-top:6px">' +
+    '<div class="sentence-preview" id="cuePreview"></div></div></div>' +
+
+    '<div class="law-section"><div class="law-head">Law 2 · Make it attractive</div>' +
+    '<div class="field"><label for="fBundle">Temptation bundle — pair it with something you enjoy (optional)</label>' +
+    '<input type="text" id="fBundle" placeholder="e.g. my favorite podcast" value="' + esc(h.bundle) + '"></div></div>' +
+
+    '<div class="law-section"><div class="law-head">Law 3 · Make it easy</div>' +
+    '<div class="field"><label for="fTwoMin">Two-minute version</label>' +
+    '<input type="text" id="fTwoMin" placeholder="e.g. Put on my running shoes" value="' + esc(h.twoMin) + '">' +
+    '<div class="hint">Scale it down until it takes two minutes. Master showing up first.</div></div></div>' +
+
+    '<div class="law-section"><div class="law-head">Law 4 · Make it satisfying</div>' +
+    '<div class="field"><label>Schedule — never break the chain on these days</label>' +
+    '<div class="day-picker" id="dayPicker">' +
+    DAY_NAMES.map((n, i) => '<button type="button" data-day="' + i + '"' +
+      (days.has(i) ? ' class="on"' : "") + ">" + n.charAt(0) + "</button>").join("") +
+    "</div></div></div>" +
+
+    '<div class="modal-actions"><button class="btn btn-ghost" id="fCancel">Cancel</button>' +
+    '<button class="btn btn-primary" id="fSave">' + (existing ? "Save changes" : "Start the chain") + "</button></div>" +
+    "</div></div>";
+
+  const $ = id => document.getElementById(id);
+  function updatePreview() {
+    const tmp = {
+      name: $("fName").value.trim() || "do my habit",
+      stack: $("fStack").value.trim(), time: $("fTime").value.trim(), location: $("fLocation").value.trim(),
+    };
+    const s = cueSentence(tmp);
+    $("cuePreview").style.display = s ? "" : "none";
+    $("cuePreview").textContent = s;
+  }
+  ["fName", "fStack", "fTime", "fLocation"].forEach(id => $(id).addEventListener("input", updatePreview));
+  updatePreview();
+
+  $("dayPicker").querySelectorAll("button").forEach(b =>
+    b.addEventListener("click", () => {
+      const d = Number(b.dataset.day);
+      days.has(d) ? days.delete(d) : days.add(d);
+      b.classList.toggle("on", days.has(d));
+    }));
+
+  function close() { root.innerHTML = ""; }
+  $("fCancel").addEventListener("click", close);
+  root.querySelector(".overlay").addEventListener("click", e => { if (e.target === e.currentTarget) close(); });
+
+  $("fSave").addEventListener("click", () => {
+    const name = $("fName").value.trim();
+    if (!name) { $("fName").focus(); return; }
+    if (!days.size) { toast("Pick at least one day."); return; }
+    const data = {
+      name, identity: $("fIdentity").value.trim(),
+      stack: $("fStack").value.trim(), time: $("fTime").value.trim(), location: $("fLocation").value.trim(),
+      bundle: $("fBundle").value.trim(), twoMin: $("fTwoMin").value.trim(),
+      days: [...days].sort((a, b) => a - b),
+    };
+    if (existing) Object.assign(existing, data);
+    else state.habits.push(Object.assign({ id: uid(), createdAt: todayIso() }, data));
+    saveState(); close();
+    if (!existing) { activeTab = "today"; syncTabs(); toast("Chain started. Show up tomorrow."); }
+    render();
+  });
+  $("fName").focus();
+}
+function syncTabs() {
+  document.querySelectorAll("nav [role=tab]").forEach(b =>
+    b.setAttribute("aria-selected", String(b.dataset.tab === activeTab)));
+}
+
+/* ================= export / import ================= */
+document.getElementById("exportBtn").addEventListener("click", () => {
+  ioModal("Export data", "Copy this somewhere safe — it’s your full history.",
+    JSON.stringify(state), null);
+});
+document.getElementById("importBtn").addEventListener("click", () => {
+  ioModal("Import data", "Paste a previous export. This replaces what’s here now.", "", raw => {
+    try {
+      const s = JSON.parse(raw);
+      if (!s || !Array.isArray(s.habits) || typeof s.log !== "object") throw new Error("bad shape");
+      state = s; saveState(); render();
+      toast("Imported " + s.habits.length + " habit" + (s.habits.length === 1 ? "" : "s") + ".");
+      return true;
+    } catch (e) { toast("That doesn’t look like a valid export."); return false; }
+  });
+});
+function ioModal(title, sub, value, onSubmit) {
+  const root = document.getElementById("modalRoot");
+  root.innerHTML = '<div class="overlay"><div class="modal" role="dialog" aria-modal="true">' +
+    "<h2>" + title + '</h2><p class="modal-sub">' + sub + "</p>" +
+    '<div class="field"><textarea class="io" id="ioText"></textarea></div>' +
+    '<div class="modal-actions"><button class="btn btn-ghost" id="ioCancel">Close</button>' +
+    (onSubmit ? '<button class="btn btn-primary" id="ioGo">Import</button>'
+              : '<button class="btn btn-primary" id="ioCopy">Copy</button>') +
+    "</div></div></div>";
+  const ta = document.getElementById("ioText");
+  ta.value = value;
+  const close = () => root.innerHTML = "";
+  document.getElementById("ioCancel").addEventListener("click", close);
+  root.querySelector(".overlay").addEventListener("click", e => { if (e.target === e.currentTarget) close(); });
+  if (onSubmit) {
+    document.getElementById("ioGo").addEventListener("click", () => { if (onSubmit(ta.value)) close(); });
+  } else {
+    ta.select();
+    document.getElementById("ioCopy").addEventListener("click", () => {
+      ta.select();
+      try { document.execCommand("copy"); toast("Copied."); } catch (e) { toast("Select the text and copy manually."); }
+    });
+  }
+}
+
+window.addEventListener("resize", () => { if (activeTab === "progress") render(); });
+render();
+</script>

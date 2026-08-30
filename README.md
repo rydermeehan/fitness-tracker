@@ -1,0 +1,34 @@
+# 1% Better
+
+A habit tracker for putting *Atomic Habits* by James Clear into practice. No accounts, no
+build step, no dependencies — one HTML file that stores everything in your browser.
+
+## The system it implements
+
+- **Identity-based habits** — every habit is tied to who it makes you ("I am becoming a
+  runner"). Each completion is a *vote* for that identity, and the app counts your votes.
+- **The Four Laws of Behavior Change** — the habit form walks you through them:
+  - *Make it obvious*: habit stacking ("After I pour my coffee, I will…") or an
+    implementation intention (time + place), composed into a sentence as you type.
+  - *Make it attractive*: temptation bundling — pair the habit with something you enjoy.
+  - *Make it easy*: a two-minute version of the habit, shown on the Today view so you
+    only ever have to start.
+  - *Make it satisfying*: check the day off and watch the chain grow.
+- **Don't break the chain** — per-habit streaks, best streaks, and a 15-week heatmap.
+- **Never miss twice** — a gentle nudge after one missed day, a firmer one after two,
+  and a one-tap way to repair yesterday if you actually did it.
+- **The compounding curve** — the 1.01³⁶⁵ ≈ 37× vs 0.99³⁶⁵ ≈ 0.03 chart, with a marker
+  for where your total votes put you.
+
+## Running it
+
+Open `index.html` in any browser — that's it. It also works as-is on GitHub Pages
+(Settings → Pages → deploy from the `main` branch).
+
+Data lives in `localStorage`, private to your browser. Use **Export** / **Import** in
+the header to back it up or move it between devices.
+
+## Habits can be scheduled
+
+Each habit picks its days of the week. Streaks, completion rates, and the never-miss-twice
+nudges only count scheduled days, so a weekdays-only habit isn't punished for the weekend.
