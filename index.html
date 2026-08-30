@@ -161,6 +161,31 @@
 
   .day-summary { margin-top: 22px; font-size: 13.5px; color: var(--ink-faint); }
 
+  /* ---------- voice guide ---------- */
+  .guide-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+    box-shadow: var(--shadow); padding: 14px 16px; margin-bottom: 16px;
+  }
+  .guide-controls { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .guide-play {
+    font: inherit; font-weight: 600; font-size: 14px; cursor: pointer;
+    border: none; border-radius: 999px; padding: 8px 18px;
+    background: var(--accent); color: #fff; display: inline-flex; align-items: center; gap: 8px;
+  }
+  .guide-play:hover { filter: brightness(1.08); }
+  .guide-play.stop { background: var(--danger); }
+  .guide-controls select {
+    font: inherit; font-size: 12.5px; color: var(--ink-soft); background: var(--ground);
+    border: 1px solid var(--line); border-radius: 8px; padding: 5px 6px; max-width: 150px;
+  }
+  .guide-controls select:focus { outline: none; border-color: var(--accent); }
+  .guide-transcript { margin-top: 12px; font-size: 14.5px; line-height: 1.65; color: var(--ink-soft); }
+  .guide-transcript span { border-radius: 4px; padding: 1px 2px; }
+  .guide-transcript span.said { color: var(--ink); }
+  .guide-transcript span.saying { color: var(--ink); background: var(--accent-soft); }
+  .guide-note { font-size: 12.5px; color: var(--ink-faint); margin: 8px 0 0; }
+  .guide-err { font-size: 13px; color: var(--danger); margin: 8px 0 0; }
+
   /* ---------- empty state ---------- */
   .empty {
     text-align: center; padding: 48px 24px; background: var(--surface);
@@ -657,12 +682,196 @@ function render() {
   else renderProgress(view);
 }
 
+/* ================= voice guide ================= */
+const VOICE_KEY = "onepercent.voice";
+const voicePrefs = (() => {
+  try {
+    const p = JSON.parse(localStorage.getItem(VOICE_KEY));
+    if (p && typeof p === "object") return { voiceURI: String(p.voiceURI || ""), rate: Number(p.rate) || 1 };
+  } catch (e) { /* per-device convenience only */ }
+  return { voiceURI: "", rate: 1 };
+})();
+function saveVoicePrefs() {
+  try { localStorage.setItem(VOICE_KEY, JSON.stringify(voicePrefs)); } catch (e) { /* best effort */ }
+}
+const speech = {
+  supported: typeof window.speechSynthesis !== "undefined" && typeof window.SpeechSynthesisUtterance !== "undefined",
+};
+function pickVoice() {
+  const vs = speechSynthesis.getVoices();
+  return vs.find(v => v.voiceURI === voicePrefs.voiceURI) ||
+    vs.find(v => v.default && v.lang.startsWith("en")) || vs.find(v => v.lang.startsWith("en")) || vs[0] || null;
+}
+function speakSentence(text, onstart, onend) {
+  try {
+    const u = new SpeechSynthesisUtterance(text);
+    const v = pickVoice();
+    if (v) u.voice = v;
+    u.rate = voicePrefs.rate;
+    if (onstart) u.onstart = onstart;
+    if (onend) { u.onend = onend; u.onerror = onend; }
+    speechSynthesis.speak(u); // queues after anything already speaking
+  } catch (e) { /* speech failed — the transcript still carries the guide */ }
+}
+function stopSpeaking() {
+  try { if (speech.supported) speechSynthesis.cancel(); } catch (e) { /* nothing to stop */ }
+}
+if (speech.supported && typeof speechSynthesis.onvoiceschanged !== "undefined") {
+  speechSynthesis.onvoiceschanged = () => {
+    const sel = document.getElementById("guideVoice");
+    if (sel) populateVoiceSelect(sel);
+  };
+}
+function populateVoiceSelect(sel) {
+  const vs = speechSynthesis.getVoices();
+  sel.hidden = !vs.length;
+  sel.innerHTML = vs.map(v =>
+    '<option value="' + esc(v.voiceURI) + '"' + (pickVoice() === v ? " selected" : "") + ">" +
+    esc(v.name) + "</option>").join("");
+}
+
+const guide = { status: "idle", sentences: [], buf: "", ctl: null, sayingIdx: -1, err: "" };
+
+function guideMarkup() {
+  let html = '<div class="guide-card"><div class="guide-controls">';
+  html += guide.status === "running"
+    ? '<button class="guide-play stop" id="guideBtn">■ Stop</button>'
+    : '<button class="guide-play" id="guideBtn">▶ ' + (guide.sentences.length ? "Guide me again" : "Start my day") + "</button>";
+  if (speech.supported) {
+    html += '<select id="guideVoice" aria-label="Voice" hidden></select>' +
+      '<select id="guideRate" aria-label="Pace">' +
+      [[0.85, "Calm"], [1, "Normal"], [1.15, "Brisk"]].map(([r, l]) =>
+        '<option value="' + r + '"' + (Math.abs(voicePrefs.rate - r) < 0.01 ? " selected" : "") + ">" + l + "</option>").join("") +
+      "</select>";
+  }
+  html += "</div>";
+  if (guide.sentences.length || guide.status === "running") {
+    html += '<div class="guide-transcript" id="guideTranscript">' + transcriptMarkup() + "</div>";
+  }
+  if (!speech.supported) html += '<p class="guide-note">No speech voices in this browser — the guide will be text only.</p>';
+  if (guide.err) html += '<p class="guide-err">' + esc(guide.err) + "</p>";
+  html += "</div>";
+  return html;
+}
+function transcriptMarkup() {
+  if (guide.status === "running" && !guide.sentences.length) return '<span class="saying">Thinking…</span>';
+  return guide.sentences.map((s, i) =>
+    "<span" + (i === guide.sayingIdx ? ' class="saying"' : (i < guide.sayingIdx || guide.sayingIdx === -1 ? ' class="said"' : "")) +
+    ' id="gs-' + i + '">' + esc(s) + "</span>").join(" ");
+}
+function refreshTranscript() {
+  const el = document.getElementById("guideTranscript");
+  if (el) el.innerHTML = transcriptMarkup();
+}
+function wireGuideCard(root) {
+  const btn = root.querySelector("#guideBtn");
+  if (btn) btn.addEventListener("click", () => {
+    if (guide.status === "running") stopGuide(); else runGuide();
+  });
+  const vSel = root.querySelector("#guideVoice");
+  if (vSel) {
+    populateVoiceSelect(vSel);
+    vSel.addEventListener("change", () => { voicePrefs.voiceURI = vSel.value; saveVoicePrefs(); });
+  }
+  const rSel = root.querySelector("#guideRate");
+  if (rSel) rSel.addEventListener("change", () => { voicePrefs.rate = Number(rSel.value) || 1; saveVoicePrefs(); });
+}
+function stopGuide() {
+  if (guide.ctl) guide.ctl.abort();
+  stopSpeaking();
+  guide.status = "idle"; guide.sayingIdx = -1;
+  if (activeTab === "today") render();
+}
+function addGuideSentence(s) {
+  const i = guide.sentences.length;
+  guide.sentences.push(s);
+  refreshTranscript();
+  if (speech.supported) {
+    speakSentence(s,
+      () => { guide.sayingIdx = i; refreshTranscript(); },
+      () => {
+        if (guide.sayingIdx === i) { guide.sayingIdx = -1; refreshTranscript(); }
+      });
+  }
+}
+function drainGuideBuf(final) {
+  for (;;) {
+    const m = guide.buf.match(/[.!?]["')\]]?(\s+|$)/);
+    if (!m) break;
+    const cut = m.index + m[0].length;
+    const s = guide.buf.slice(0, cut).trim();
+    guide.buf = guide.buf.slice(cut);
+    if (s) addGuideSentence(s);
+  }
+  if (final && guide.buf.trim()) { addGuideSentence(guide.buf.trim()); guide.buf = ""; }
+}
+async function runGuide() {
+  const sample = sampleNS !== undefined ? sampleNS
+    : await (window.claude && window.claude.use ? window.claude.use("sample").catch(() => null) : null);
+  if (!sample) {
+    guide.err = "The voice guide needs the Claude-hosted version of this app.";
+    if (activeTab === "today") render();
+    return;
+  }
+  stopSpeaking();
+  guide.status = "running"; guide.sentences = []; guide.buf = ""; guide.sayingIdx = -1; guide.err = "";
+  guide.ctl = new AbortController();
+  if (activeTab === "today") render();
+  try {
+    await sample(guidePrompt(), {
+      modelTier: "quick",
+      signal: guide.ctl.signal,
+      onText: ({ delta }) => { guide.buf += delta; drainGuideBuf(false); },
+    });
+    drainGuideBuf(true);
+    guide.status = "done";
+  } catch (e) {
+    guide.status = "done";
+    if (e && e.code === "refused") { guide.sentences = []; stopSpeaking(); }
+    if (e && e.code !== "cancelled") guide.err = coachErrCopy(e.code);
+  }
+  guide.ctl = null;
+  if (activeTab === "today") render();
+}
+function guidePrompt() {
+  const now = new Date();
+  const lines = [];
+  lines.push(
+    "You are a warm, brief voice guide for my Atomic Habits practice. Your words will be READ ALOUD by " +
+    "text-to-speech, so write only spoken prose: short sentences, no headings, no lists, no markdown, no " +
+    "emoji, no stage directions. 100 to 160 words total.", "",
+    "Today is " + now.toDateString() + ". My data:");
+  const ids = [...new Set(state.habits.map(h => (h.identity || "").trim()).filter(Boolean))];
+  if (ids.length) lines.push("Identities I'm building: " + ids.join(", ") + ".");
+  for (const h of state.habits.filter(h => scheduledOn(h, now))) {
+    lines.push("- " + h.name + ": " + (isDone(h.id, todayIso()) ? "already done today" : "not done yet") +
+      "; chain " + streak(h) + " days" +
+      (h.twoMin ? "; two-minute start: " + h.twoMin : "") +
+      (cueSentence(h) ? "; cue: " + cueSentence(h) : ""));
+  }
+  for (const h of state.habits) {
+    if (missedYesterday(h)) lines.push("- I missed " + h.name + " yesterday — never miss twice.");
+  }
+  const unprimed = [];
+  for (const h of state.habits.filter(h => scheduledOn(h, now))) {
+    for (const s of h.env) if (!isPrimed(s.id)) unprimed.push(s.text);
+  }
+  if (unprimed.length) lines.push("Environment steps not yet done: " + unprimed.slice(0, 4).join("; ") + ".");
+  lines.push("",
+    "Greet me briefly, then walk me into the day: for each habit not yet done, give me its two-minute way " +
+    "in and what the chain stakes are. If I missed something yesterday, one firm-but-kind never-miss-twice " +
+    "line. If everything is already done, celebrate instead. Close with one line about who these votes make me.");
+  return lines.join("\n");
+}
+
 /* ================= today ================= */
 function renderToday(view) {
   const now = new Date();
   const dateLine = now.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
   const todays = state.habits.filter(h => scheduledOn(h, now));
   let html = '<p class="today-date">' + esc(dateLine) + "</p>";
+
+  if (sampleNS !== null) html += guideMarkup();
 
   // Never-miss-twice notes
   for (const h of state.habits) {
@@ -722,6 +931,7 @@ function renderToday(view) {
       render();
     });
   });
+  wireGuideCard(view);
 }
 
 function cueSentence(h) {
@@ -1061,8 +1271,8 @@ function envPrompt() {
 /* ================= coach tab ================= */
 let sampleNS; // undefined = still resolving, null = unavailable in this context
 (window.claude && window.claude.use ? window.claude.use("sample") : Promise.resolve(null))
-  .then(ns => { sampleNS = ns; if (activeTab === "coach") render(); })
-  .catch(() => { sampleNS = null; if (activeTab === "coach") render(); });
+  .then(ns => { sampleNS = ns; if (activeTab === "coach" || activeTab === "today") render(); })
+  .catch(() => { sampleNS = null; if (activeTab === "coach" || activeTab === "today") render(); });
 
 const coach = { status: "idle", text: "", err: "", ctl: null }; // survives tab switches
 
@@ -1080,6 +1290,7 @@ function renderCoach(view) {
         ? '<button class="btn btn-ghost" id="coachStop">Stop</button><span class="coach-note">Reading your chains…</span>'
         : '<button class="btn btn-primary" id="coachGo">' +
           (coach.text ? "Coach me again" : "Coach me") + "</button>" +
+          (coach.text && speech.supported ? '<button class="btn btn-ghost" id="coachSpeak">🔊 Read aloud</button>' : "") +
           '<span class="coach-note">Uses your Claude account; you’ll be asked once.</span>') +
       "</div>";
   }
@@ -1096,6 +1307,12 @@ function renderCoach(view) {
   if (go) go.addEventListener("click", runCoach);
   const stop = document.getElementById("coachStop");
   if (stop) stop.addEventListener("click", () => { if (coach.ctl) coach.ctl.abort(); });
+  const speak = document.getElementById("coachSpeak");
+  if (speak) speak.addEventListener("click", () => {
+    stopSpeaking();
+    const plain = coach.text.replace(/^##\s*/gm, "").replace(/\*\*/g, "").replace(/^-\s*/gm, "");
+    for (const part of plain.split(/\n+/)) if (part.trim()) speakSentence(part.trim());
+  });
 }
 
 async function runCoach() {

@@ -22,6 +22,12 @@ build step, no dependencies — one HTML file that stores everything in your bro
   "prime today's environment" checklist that resets each morning. With the AI runtime,
   Claude studies your habits, where they slip, and an optional note about your spaces,
   and suggests concrete physical tweaks you can adopt with one tap.
+- **An AI voice guide** — a play button on the Today view has Claude compose a short
+  spoken kickoff from your live data (today's habits, two-minute starts, chains at
+  stake, never-miss-twice) and reads it aloud with the browser's speech synthesis,
+  sentence by sentence as the text streams, with a highlighted transcript and voice/pace
+  controls. The Coach's written feedback gets a Read-aloud button too. Falls back to a
+  text transcript where no speech voices exist.
 - **An AI coach** — when the app runs as a Claude artifact, the Coach tab sends your
   habit designs and last four weeks of check-ins to Claude (on your account, with your
   consent) and streams back feedback: which of the Four Laws to adjust per habit,
