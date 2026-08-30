@@ -15,6 +15,14 @@ build step, no dependencies — one HTML file that stores everything in your bro
     only ever have to start.
   - *Make it satisfying*: check the day off and watch the chain grow.
 - **Don't break the chain** — per-habit streaks, best streaks, and a 15-week heatmap.
+- **A daily tracker grid** — the classic paper habit tracker as a month view (habits ×
+  days). Tap any past square to mark or fix a day; rest days show as dots.
+- **An AI coach** — when the app runs as a Claude artifact, the Coach tab sends your
+  habit designs and last four weeks of check-ins to Claude (on your account, with your
+  consent) and streams back feedback: which of the Four Laws to adjust per habit,
+  day-of-week patterns in your data, and new habits to stack onto existing routines.
+  Outside the artifact runtime the tab explains itself and sits out; everything else
+  works unchanged.
 - **Never miss twice** — a gentle nudge after one missed day, a firmer one after two,
   and a one-tap way to repair yesterday if you actually did it.
 - **The compounding curve** — the 1.01³⁶⁵ ≈ 37× vs 0.99³⁶⁵ ≈ 0.03 chart, with a marker

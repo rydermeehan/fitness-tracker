@@ -195,6 +195,62 @@
   .card-actions { display: flex; gap: 8px; padding: 0 16px 14px; }
   .card-actions .btn { padding: 5px 14px; font-size: 13px; }
 
+  /* ---------- tracker tab ---------- */
+  .tracker-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .tracker-head h2 { font-family: "Newsreader", Georgia, serif; font-weight: 600; font-size: 19px; margin: 0; }
+  .month-nav { display: flex; gap: 6px; }
+  .month-nav button {
+    font: inherit; font-size: 14px; cursor: pointer; width: 32px; height: 32px;
+    border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--ink-soft);
+  }
+  .month-nav button:hover { background: var(--surface-2); }
+  .tracker-scroll {
+    overflow-x: auto; background: var(--surface); border: 1px solid var(--line);
+    border-radius: 12px; box-shadow: var(--shadow); padding: 14px 12px;
+  }
+  table.tracker { border-collapse: collapse; }
+  .tracker th, .tracker td { padding: 2px; text-align: center; }
+  .tracker th {
+    font-size: 10.5px; font-weight: 500; color: var(--ink-faint);
+    font-variant-numeric: tabular-nums; min-width: 24px;
+  }
+  .tracker th.today-col { color: var(--accent); font-weight: 700; }
+  .tracker .h-name {
+    text-align: left; font-size: 13px; font-weight: 600; color: var(--ink);
+    position: sticky; left: 0; background: var(--surface); padding-right: 12px;
+    max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .t-cell {
+    display: inline-block; width: 20px; height: 20px; border-radius: 6px;
+    border: none; padding: 0; cursor: pointer; background: var(--cell-empty); vertical-align: middle;
+  }
+  button.t-cell:hover { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .t-cell.t-done { background: var(--done); }
+  .t-cell.t-off { background: none; cursor: default; position: relative; }
+  .t-cell.t-off::after { content: "·"; color: var(--ink-faint); }
+  .t-cell.t-na { background: none; cursor: default; }
+  .tracker-hint { font-size: 12.5px; color: var(--ink-faint); margin-top: 12px; }
+
+  /* ---------- coach tab ---------- */
+  .coach-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+    box-shadow: var(--shadow); padding: 18px; margin-bottom: 14px;
+  }
+  .coach-card h3 { font-family: "Newsreader", Georgia, serif; font-weight: 600; font-size: 19px; margin: 0 0 4px; }
+  .coach-card > p { color: var(--ink-soft); font-size: 13.5px; margin: 0 0 14px; max-width: 42em; }
+  .coach-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .coach-note { font-size: 13px; color: var(--ink-faint); }
+  .coach-out { margin-top: 4px; font-size: 14.5px; }
+  .coach-out h4 {
+    font-size: 11.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em;
+    color: var(--accent); margin: 18px 0 6px;
+  }
+  .coach-out p { margin: 8px 0; color: var(--ink); }
+  .coach-out ul { margin: 6px 0; padding-left: 20px; }
+  .coach-out li { margin: 4px 0; color: var(--ink); }
+  .coach-out .thinking { color: var(--ink-faint); font-style: italic; }
+  .coach-err { font-size: 13.5px; color: var(--danger); margin-top: 10px; }
+
   /* ---------- progress tab ---------- */
   .progress-card {
     background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
@@ -283,8 +339,10 @@
 
   <nav role="tablist">
     <button role="tab" data-tab="today" aria-selected="true">Today</button>
+    <button role="tab" data-tab="tracker" aria-selected="false">Tracker</button>
     <button role="tab" data-tab="habits" aria-selected="false">Habits</button>
     <button role="tab" data-tab="progress" aria-selected="false">Progress</button>
+    <button role="tab" data-tab="coach" aria-selected="false">Coach</button>
   </nav>
 
   <main id="view"></main>
@@ -440,7 +498,9 @@ function render() {
     return;
   }
   if (activeTab === "today") renderToday(view);
+  else if (activeTab === "tracker") renderTracker(view);
   else if (activeTab === "habits") renderHabits(view);
+  else if (activeTab === "coach") renderCoach(view);
   else renderProgress(view);
 }
 
@@ -567,6 +627,211 @@ function renderHabits(view) {
       }
       saveState(); render();
     }));
+}
+
+/* ================= tracker tab ================= */
+let trackerMonth = (() => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1); })();
+
+function renderTracker(view) {
+  const y = trackerMonth.getFullYear(), m = trackerMonth.getMonth();
+  const nDays = new Date(y, m + 1, 0).getDate();
+  const label = trackerMonth.toLocaleDateString(undefined, { month: "long", year: "numeric" });
+
+  let head1 = '<tr><th class="h-name"></th>', head2 = '<tr><th class="h-name"></th>';
+  for (let d = 1; d <= nDays; d++) {
+    const date = new Date(y, m, d);
+    const isToday = iso(date) === todayIso();
+    head1 += '<th class="' + (isToday ? "today-col" : "") + '">' + DAY_NAMES[date.getDay()].charAt(0) + "</th>";
+    head2 += '<th class="' + (isToday ? "today-col" : "") + '">' + d + "</th>";
+  }
+  head1 += "</tr>"; head2 += "</tr>";
+
+  let rows = "";
+  for (const h of state.habits) {
+    rows += '<tr><td class="h-name" title="' + esc(h.name) + '">' + esc(h.name) + "</td>";
+    for (let d = 1; d <= nDays; d++) {
+      const date = new Date(y, m, d);
+      const dIso = iso(date);
+      const tip = esc(h.name) + " — " + date.toLocaleDateString();
+      if (dIso > todayIso() || dIso < h.createdAt) {
+        rows += '<td><span class="t-cell t-na"></span></td>';
+      } else if (!scheduledOn(h, date)) {
+        rows += '<td><span class="t-cell t-off" title="' + tip + ' (rest day)"></span></td>';
+      } else {
+        const done = isDone(h.id, dIso);
+        rows += '<td><button class="t-cell' + (done ? " t-done" : "") + '" data-t="' + h.id + "|" + dIso +
+          '" title="' + tip + (done ? " — done" : " — missed") +
+          '" aria-label="Toggle ' + tip + '"></button></td>';
+      }
+    }
+    rows += "</tr>";
+  }
+
+  view.innerHTML =
+    '<div class="tracker-head"><h2>' + esc(label) + "</h2>" +
+    '<div class="month-nav"><button id="prevMonth" aria-label="Previous month">‹</button>' +
+    '<button id="nextMonth" aria-label="Next month">›</button></div></div>' +
+    '<div class="tracker-scroll"><table class="tracker"><thead>' + head1 + head2 +
+    "</thead><tbody>" + rows + "</tbody></table></div>" +
+    '<p class="tracker-hint">Tap a square to mark or unmark a day — the tracker is the cue, the record, and the reward. Dots are rest days.</p>';
+
+  const scroller = view.querySelector(".tracker-scroll");
+  const todayTh = view.querySelector("th.today-col");
+  if (scroller && todayTh) {
+    scroller.scrollLeft = Math.max(0, todayTh.offsetLeft - scroller.clientWidth + 60);
+  }
+
+  document.getElementById("prevMonth").addEventListener("click", () => {
+    trackerMonth = new Date(y, m - 1, 1); render();
+  });
+  document.getElementById("nextMonth").addEventListener("click", () => {
+    trackerMonth = new Date(y, m + 1, 1); render();
+  });
+  view.querySelectorAll("[data-t]").forEach(btn =>
+    btn.addEventListener("click", () => {
+      const [id, dIso] = btn.dataset.t.split("|");
+      setDone(id, dIso, !isDone(id, dIso));
+      render();
+    }));
+}
+
+/* ================= coach tab ================= */
+let sampleNS; // undefined = still resolving, null = unavailable in this context
+(window.claude && window.claude.use ? window.claude.use("sample") : Promise.resolve(null))
+  .then(ns => { sampleNS = ns; if (activeTab === "coach") render(); })
+  .catch(() => { sampleNS = null; if (activeTab === "coach") render(); });
+
+const coach = { status: "idle", text: "", err: "", ctl: null }; // survives tab switches
+
+function renderCoach(view) {
+  let html = '<div class="coach-card"><h3>Your habit coach</h3>' +
+    "<p>Claude reads your habit designs and your last four weeks of check-ins, then gives feedback " +
+    "the way the book would: which law to adjust, what patterns your data shows, and what to stack next.</p>";
+
+  if (sampleNS === null) {
+    html += '<p class="coach-note">AI coaching is available when this app runs as a Claude artifact. ' +
+      "Running as a plain file or static site, everything else works — this tab just sits out.</p>";
+  } else {
+    html += '<div class="coach-actions">' +
+      (coach.status === "running"
+        ? '<button class="btn btn-ghost" id="coachStop">Stop</button><span class="coach-note">Reading your chains…</span>'
+        : '<button class="btn btn-primary" id="coachGo">' +
+          (coach.text ? "Coach me again" : "Coach me") + "</button>" +
+          '<span class="coach-note">Uses your Claude account; you’ll be asked once.</span>') +
+      "</div>";
+  }
+  html += '<div class="coach-out" id="coachOut"></div>' +
+    (coach.err ? '<p class="coach-err">' + esc(coach.err) + "</p>" : "") +
+    "</div>";
+  view.innerHTML = html;
+
+  const out = document.getElementById("coachOut");
+  if (coach.status === "running" && !coach.text) out.innerHTML = '<p class="thinking">Thinking…</p>';
+  else if (coach.text) out.innerHTML = mdLite(coach.text);
+
+  const go = document.getElementById("coachGo");
+  if (go) go.addEventListener("click", runCoach);
+  const stop = document.getElementById("coachStop");
+  if (stop) stop.addEventListener("click", () => { if (coach.ctl) coach.ctl.abort(); });
+}
+
+async function runCoach() {
+  const sample = sampleNS !== undefined ? sampleNS
+    : await (window.claude && window.claude.use ? window.claude.use("sample").catch(() => null) : null);
+  if (!sample) { sampleNS = null; render(); return; }
+
+  coach.status = "running"; coach.text = ""; coach.err = ""; coach.ctl = new AbortController();
+  render();
+  try {
+    const { text, truncated } = await sample(coachPrompt(), {
+      signal: coach.ctl.signal,
+      onText: ({ text }) => {
+        coach.text = text;
+        const out = document.getElementById("coachOut");
+        if (out) out.innerHTML = mdLite(text);
+      },
+    });
+    coach.text = text;
+    if (truncated) coach.err = "The answer was cut short — try again for the rest.";
+    coach.status = "done";
+  } catch (e) {
+    coach.text = e && e.text ? e.text : coach.text;
+    coach.status = "done";
+    coach.err = coachErrCopy(e && e.code);
+    if (e && e.code === "cancelled") coach.err = "";
+    if (e && (e.code === "not_granted" || e.code === "sampling_disabled" ||
+              e.code === "not_declared" || e.code === "capability_disabled")) {
+      sampleNS = null; coach.err = "";
+    }
+    if (e && e.code === "refused") coach.text = "";
+  }
+  coach.ctl = null;
+  if (activeTab === "coach") render();
+}
+
+function coachErrCopy(code) {
+  switch (code) {
+    case "rate_limited": return "Claude is busy or you’ve hit your usage limit — try again in a bit.";
+    case "session_expired": return "Your Claude session expired — sign in again, then retry.";
+    case "refused": return "Claude declined that request. Try again after your data changes.";
+    case "prompt_too_large": return "Too much history to send at once — this shouldn’t happen; try again.";
+    default: return "Something went wrong reaching Claude. Your data is fine — try again.";
+  }
+}
+
+function coachPrompt() {
+  const lines = [];
+  lines.push(
+    "You are a warm, direct habit coach applying the system from Atomic Habits by James Clear: " +
+    "identity-based habits, the Four Laws (make it obvious, attractive, easy, satisfying), habit stacking, " +
+    "implementation intentions, the two-minute rule, and never miss twice.",
+    "",
+    "Here is my real data from my habit tracker as of " + new Date().toDateString() + ":", "");
+  for (const h of state.habits) {
+    const t = totals(h);
+    lines.push("HABIT: " + h.name);
+    if (h.identity) lines.push("  identity: becoming " + h.identity);
+    const cue = cueSentence(h);
+    if (cue) lines.push("  cue: " + cue);
+    if (h.twoMin) lines.push("  two-minute version: " + h.twoMin);
+    if (h.bundle) lines.push("  temptation bundle: " + h.bundle);
+    lines.push("  schedule: " + daysLabel(h.days));
+    lines.push("  current chain: " + streak(h) + ", best: " + bestStreak(h) +
+      ", kept " + t.done + " of " + t.scheduled + " scheduled days since " + h.createdAt);
+    const recent = [];
+    for (let i = 27; i >= 0; i--) {
+      const d = daysAgo(i);
+      if (iso(d) < h.createdAt || !scheduledOn(h, d)) continue;
+      recent.push(DAY_NAMES[d.getDay()] + " " + iso(d).slice(5) + ":" + (isDone(h.id, iso(d)) ? "done" : "missed"));
+    }
+    if (recent.length) lines.push("  last 4 weeks (scheduled days): " + recent.join(", "));
+    lines.push("");
+  }
+  lines.push(
+    "Coach me. Keep it under 300 words, specific to MY data — quote my actual cues, identities, and numbers. " +
+    "Structure the reply exactly as: '## How it's going' (2-3 sentences), " +
+    "'## Habit by habit' (one bullet per habit: what's working or which of the Four Laws to adjust, with one concrete change), " +
+    "'## Patterns' (only if the day-of-week data shows one), " +
+    "'## Stack next' (one or two new habit suggestions that stack onto my existing routines, phrased as 'After I X, I will Y'). " +
+    "Use only ## headings, - bullets, and **bold**. No preamble, no sign-off.");
+  return lines.join("\n");
+}
+
+/* Renders the small markdown subset the coach prompt asks for. */
+function mdLite(text) {
+  const out = [];
+  let list = null;
+  const flush = () => { if (list) { out.push("<ul>" + list.join("") + "</ul>"); list = null; } };
+  for (const raw of esc(text).split("\n")) {
+    const line = raw.trim();
+    const inline = s => s.replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>");
+    if (line.startsWith("## ")) { flush(); out.push("<h4>" + inline(line.slice(3)) + "</h4>"); }
+    else if (line.startsWith("- ")) { (list = list || []).push("<li>" + inline(line.slice(2)) + "</li>"); }
+    else if (line) { flush(); out.push("<p>" + inline(line) + "</p>"); }
+    else flush();
+  }
+  flush();
+  return out.join("");
 }
 
 /* ================= progress tab ================= */
