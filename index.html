@@ -85,6 +85,16 @@
     font: inherit; font-size: 13px; padding: 4px 8px; border-radius: 6px;
   }
   .icon-btn:hover { color: var(--ink); background: var(--surface-2); }
+  .sync-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 12px; color: var(--ink-faint); padding: 4px 8px;
+  }
+  .sync-badge::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--ink-faint); }
+  .sync-badge.synced { color: var(--done); }
+  .sync-badge.synced::before { background: var(--done); }
+  .sync-badge.syncing::before { background: var(--warn); }
+  .sync-badge.error { color: var(--danger); }
+  .sync-badge.error::before { background: var(--danger); }
 
   .identity-banner {
     font-family: "Newsreader", Georgia, serif; font-style: italic;
@@ -388,6 +398,7 @@
   <header>
     <div class="wordmark">1<em>%</em> Better</div>
     <div class="header-tools">
+      <span class="sync-badge" id="syncBadge" hidden></span>
       <button class="icon-btn" id="exportBtn" title="Back up or move your data">Export</button>
       <button class="icon-btn" id="importBtn">Import</button>
     </div>
@@ -434,8 +445,84 @@ function loadState() {
 function saveState() {
   try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
   catch (e) { /* private mode etc. — app still works for the session */ }
+  scheduleCloudPush();
 }
 let state = loadState();
+
+/* ================= cloud sync (artifact db capability) ================= */
+const cloud = { ref: null, timer: null, retried: false };
+
+function coreState() {
+  return { habits: state.habits, log: state.log, prime: state.prime, spaceNote: state.spaceNote };
+}
+function setSyncBadge(mode) {
+  const el = document.getElementById("syncBadge");
+  if (!el) return;
+  const labels = { syncing: "Syncing…", synced: "Synced", error: "Sync error — data kept locally" };
+  el.hidden = !labels[mode];
+  el.className = "sync-badge " + (mode || "");
+  el.textContent = labels[mode] || "";
+}
+function applyRemote(data) {
+  if (!data) return;
+  const incoming = normalizeState({
+    habits: Array.isArray(data.habits) ? data.habits : [],
+    log: data.log && typeof data.log === "object" ? data.log : {},
+    prime: data.prime, spaceNote: data.spaceNote,
+  });
+  if (JSON.stringify(incoming) === JSON.stringify(coreState())) return;
+  state = incoming;
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) { /* fallback cache only */ }
+  render();
+}
+function scheduleCloudPush() {
+  if (!cloud.ref) return;
+  clearTimeout(cloud.timer);
+  setSyncBadge("syncing");
+  cloud.timer = setTimeout(pushCloud, 600);
+}
+async function pushCloud() {
+  if (!cloud.ref) return;
+  try {
+    await cloud.ref.set(coreState());
+    cloud.retried = false;
+    setSyncBadge("synced");
+  } catch (e) {
+    if (e && e.code === "unavailable" && !cloud.retried) {
+      cloud.retried = true;
+      setTimeout(pushCloud, 1500 + Math.random() * 1500);
+      return;
+    }
+    cloud.retried = false;
+    setSyncBadge(e && e.code === "revoked" ? "" : "error");
+    if (e && e.code === "revoked") cloud.ref = null;
+  }
+}
+(async () => {
+  if (!(window.claude && window.claude.use)) return;
+  let db = null;
+  try { db = await window.claude.use("db"); } catch (e) { /* treat as unavailable */ }
+  if (!db) return;
+  const ref = db.doc("app/state");
+  setSyncBadge("syncing");
+  try {
+    const snap = await ref.get();
+    cloud.ref = ref;
+    if (snap.exists) {
+      applyRemote(snap.data());
+      setSyncBadge("synced");
+    } else {
+      await ref.set(coreState()); // first run in the cloud: seed from this browser
+      setSyncBadge("synced");
+    }
+    ref.onSnapshot(s => {
+      if (!s.exists || s.metadata.hasPendingWrites) return;
+      applyRemote(s.data());
+    }, () => { cloud.ref = null; setSyncBadge("error"); });
+  } catch (e) {
+    setSyncBadge("error");
+  }
+})();
 
 /* ================= dates ================= */
 const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];

@@ -42,8 +42,11 @@ this repo — every push to the production branch auto-deploys) and at
 browser. Note that each host keeps its own browser storage — pick one home for your
 data, and use Export/Import to move it.
 
-Data lives in `localStorage`, private to your browser. Use **Export** / **Import** in
-the header to back it up or move it between devices.
+In the Claude artifact, data lives in the artifact's cloud store and syncs live across
+your devices — a badge in the header shows sync state, and `localStorage` is kept as an
+offline cache. On the static hosts (Vercel, GitHub Pages, a local file) there is no
+cloud runtime, so data stays in that browser's `localStorage`. Use **Export** /
+**Import** in the header to move data between hosts.
 
 ## Habits can be scheduled
 
