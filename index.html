@@ -94,7 +94,8 @@
   .identity-banner strong { color: var(--ink); font-weight: 600; }
 
   /* ---------- tabs ---------- */
-  nav { display: flex; gap: 2px; border-bottom: 1px solid var(--line); margin-bottom: 24px; }
+  nav { display: flex; gap: 2px; border-bottom: 1px solid var(--line); margin-bottom: 24px; overflow-x: auto; }
+  nav button { flex: none; }
   nav button {
     font: inherit; font-weight: 500; background: none; border: none; cursor: pointer;
     color: var(--ink-faint); padding: 8px 14px 10px; position: relative;
@@ -231,6 +232,63 @@
   .t-cell.t-na { background: none; cursor: default; }
   .tracker-hint { font-size: 12.5px; color: var(--ink-faint); margin-top: 12px; }
 
+  /* ---------- environment tab ---------- */
+  .env-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+    box-shadow: var(--shadow); padding: 16px; margin-bottom: 14px;
+  }
+  .env-card h3 { font-family: "Newsreader", Georgia, serif; font-weight: 600; font-size: 19px; margin: 0 0 4px; }
+  .env-card > p { color: var(--ink-soft); font-size: 13.5px; margin: 0 0 12px; max-width: 42em; }
+  .prime-row { display: flex; align-items: center; gap: 10px; padding: 7px 0; }
+  .prime-row + .prime-row { border-top: 1px solid var(--line); }
+  .prime-check {
+    flex: none; width: 22px; height: 22px; border-radius: 7px; padding: 0;
+    border: 2px solid var(--ink-faint); background: none; cursor: pointer;
+    display: grid; place-items: center; color: transparent; font-size: 12px; line-height: 1;
+  }
+  .prime-check.checked { background: var(--done); border-color: var(--done); color: #fff; }
+  .prime-text { flex: 1; font-size: 14px; }
+  .prime-row.primed .prime-text { color: var(--ink-faint); text-decoration: line-through; text-decoration-thickness: 1px; }
+  .prime-habit { font-size: 12px; color: var(--ink-faint); flex: none; }
+  .prime-done-note { font-size: 13px; color: var(--done); margin: 8px 0 0; }
+
+  .env-habit { border-top: 1px solid var(--line); padding: 12px 0; }
+  .env-habit:first-of-type { border-top: none; padding-top: 4px; }
+  .env-habit .habit-name { font-size: 14px; margin-bottom: 6px; }
+  .env-step { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
+  .cat-chip {
+    flex: none; font-size: 10.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+    border-radius: 999px; padding: 2px 8px; background: var(--accent-soft); color: var(--accent);
+  }
+  .cat-chip.cat-friction { background: var(--done-soft); color: var(--done); }
+  .cat-chip.cat-hide { background: var(--danger-soft); color: var(--danger); }
+  .env-step .step-text { flex: 1; font-size: 13.5px; color: var(--ink); }
+  .step-del {
+    flex: none; border: none; background: none; color: var(--ink-faint); cursor: pointer;
+    font-size: 15px; line-height: 1; padding: 2px 6px; border-radius: 6px;
+  }
+  .step-del:hover { color: var(--danger); background: var(--danger-soft); }
+  .env-add { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+  .env-add select, .env-add input {
+    font: inherit; font-size: 13px; color: var(--ink); background: var(--ground);
+    border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px;
+  }
+  .env-add input { flex: 1; min-width: 160px; }
+  .env-add select:focus, .env-add input:focus { outline: none; border-color: var(--accent); }
+  .env-add .btn { padding: 5px 14px; font-size: 13px; }
+
+  .space-note {
+    width: 100%; font: inherit; font-size: 13.5px; color: var(--ink); background: var(--ground);
+    border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px;
+    min-height: 56px; resize: vertical; margin-bottom: 10px;
+  }
+  .space-note:focus { outline: none; border-color: var(--accent); }
+  .suggestion { display: flex; align-items: center; gap: 8px; padding: 7px 0; border-top: 1px solid var(--line); }
+  .suggestion .step-text { flex: 1; font-size: 13.5px; }
+  .suggestion .for-habit { display: block; font-size: 11.5px; color: var(--ink-faint); }
+  .suggestion .btn { flex: none; padding: 4px 12px; font-size: 12.5px; }
+  .suggestion.added .step-text { color: var(--ink-faint); }
+
   /* ---------- coach tab ---------- */
   .coach-card {
     background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
@@ -342,6 +400,7 @@
     <button role="tab" data-tab="tracker" aria-selected="false">Tracker</button>
     <button role="tab" data-tab="habits" aria-selected="false">Habits</button>
     <button role="tab" data-tab="progress" aria-selected="false">Progress</button>
+    <button role="tab" data-tab="env" aria-selected="false">Environment</button>
     <button role="tab" data-tab="coach" aria-selected="false">Coach</button>
   </nav>
 
@@ -356,15 +415,21 @@
 
 /* ================= storage ================= */
 const STORE_KEY = "onepercent.v1";
+function normalizeState(s) {
+  for (const h of s.habits) if (!Array.isArray(h.env)) h.env = [];
+  if (!s.prime || typeof s.prime !== "object") s.prime = {};
+  if (typeof s.spaceNote !== "string") s.spaceNote = "";
+  return s;
+}
 function loadState() {
   try {
     const raw = localStorage.getItem(STORE_KEY);
     if (raw) {
       const s = JSON.parse(raw);
-      if (s && Array.isArray(s.habits) && s.log && typeof s.log === "object") return s;
+      if (s && Array.isArray(s.habits) && s.log && typeof s.log === "object") return normalizeState(s);
     }
   } catch (e) { /* storage unavailable or corrupt: start fresh */ }
-  return { habits: [], log: {} };
+  return normalizeState({ habits: [], log: {} });
 }
 function saveState() {
   try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
@@ -500,6 +565,7 @@ function render() {
   if (activeTab === "today") renderToday(view);
   else if (activeTab === "tracker") renderTracker(view);
   else if (activeTab === "habits") renderHabits(view);
+  else if (activeTab === "env") renderEnv(view);
   else if (activeTab === "coach") renderCoach(view);
   else renderProgress(view);
 }
@@ -693,6 +759,216 @@ function renderTracker(view) {
       setDone(id, dIso, !isDone(id, dIso));
       render();
     }));
+}
+
+/* ================= environment tab ================= */
+const ENV_CATS = {
+  cue: { label: "Cue", add: "Make the cue visible" },
+  friction: { label: "Easy", add: "Cut the friction" },
+  hide: { label: "Hide", add: "Hide the temptation" },
+};
+const envAI = { status: "idle", items: [], err: "", ctl: null };
+
+function isPrimed(stepId) {
+  const day = state.prime[todayIso()];
+  return !!(day && day.indexOf(stepId) !== -1);
+}
+function setPrimed(stepId, on) {
+  let day = state.prime[todayIso()] || [];
+  if (on && day.indexOf(stepId) === -1) day = day.concat(stepId);
+  if (!on) day = day.filter(id => id !== stepId);
+  if (day.length) state.prime[todayIso()] = day; else delete state.prime[todayIso()];
+  saveState();
+}
+
+function renderEnv(view) {
+  let html = "";
+
+  // --- daily priming checklist ---
+  const now = new Date();
+  const primeSteps = [];
+  for (const h of state.habits) {
+    if (!scheduledOn(h, now)) continue;
+    for (const s of h.env) primeSteps.push({ habit: h, step: s });
+  }
+  html += '<div class="env-card"><h3>Prime today’s environment</h3>' +
+    "<p>Set the stage before willpower is needed. Reset each day.</p>";
+  if (!primeSteps.length) {
+    html += '<p class="coach-note">No setup steps yet — design them per habit below, or ask for suggestions.</p>';
+  } else {
+    for (const { habit, step } of primeSteps) {
+      const on = isPrimed(step.id);
+      html += '<div class="prime-row' + (on ? " primed" : "") + '">' +
+        '<button class="prime-check' + (on ? " checked" : "") + '" data-prime="' + step.id +
+        '" aria-label="Toggle ' + esc(step.text) + '">✓</button>' +
+        '<span class="prime-text">' + esc(step.text) + "</span>" +
+        '<span class="prime-habit">' + esc(habit.name) + "</span></div>";
+    }
+    const doneN = primeSteps.filter(p => isPrimed(p.step.id)).length;
+    if (doneN === primeSteps.length) {
+      html += '<p class="prime-done-note">Environment primed. The good habits are now the path of least resistance.</p>';
+    }
+  }
+  html += "</div>";
+
+  // --- per-habit environment designer ---
+  html += '<div class="env-card"><h3>Design each habit’s environment</h3>' +
+    "<p>Make the cues of good habits obvious, the actions frictionless, and the temptations invisible.</p>";
+  for (const h of state.habits) {
+    html += '<div class="env-habit"><div class="habit-name">' + esc(h.name) + "</div>";
+    for (const s of h.env) {
+      const cat = ENV_CATS[s.cat] || ENV_CATS.cue;
+      html += '<div class="env-step"><span class="cat-chip cat-' + esc(s.cat) + '">' + cat.label + "</span>" +
+        '<span class="step-text">' + esc(s.text) + "</span>" +
+        '<button class="step-del" data-delstep="' + h.id + "|" + s.id +
+        '" aria-label="Remove step">×</button></div>';
+    }
+    html += '<div class="env-add"><select data-cat="' + h.id + '">' +
+      Object.keys(ENV_CATS).map(k => '<option value="' + k + '">' + ENV_CATS[k].add + "</option>").join("") +
+      '</select><input type="text" data-steptext="' + h.id +
+      '" placeholder="e.g. Put my running shoes by the door">' +
+      '<button class="btn btn-ghost" data-addstep="' + h.id + '">Add</button></div></div>';
+  }
+  html += "</div>";
+
+  // --- AI optimizer ---
+  html += '<div class="env-card"><h3>Optimize with Claude</h3>';
+  if (sampleNS === null) {
+    html += '<p class="coach-note">AI suggestions are available when this app runs as a Claude artifact.</p>';
+  } else {
+    html += "<p>Claude looks at your habits, where they slip, and your spaces, then suggests specific " +
+      "environment tweaks you can add with one tap.</p>" +
+      '<textarea class="space-note" id="spaceNote" placeholder="Optional: describe your spaces in a line or two — e.g. small apartment, desk in the bedroom, phone charges on my nightstand.">' +
+      esc(state.spaceNote) + "</textarea>" +
+      '<div class="coach-actions">' +
+      (envAI.status === "running"
+        ? '<button class="btn btn-ghost" id="envStop">Stop</button><span class="coach-note">Studying your setup…</span>'
+        : '<button class="btn btn-primary" id="envGo">Suggest optimizations</button>') +
+      "</div>";
+    if (envAI.items.length) {
+      html += "<div>";
+      for (let i = 0; i < envAI.items.length; i++) {
+        const it = envAI.items[i];
+        const cat = ENV_CATS[it.cat] || ENV_CATS.cue;
+        html += '<div class="suggestion' + (it.added ? " added" : "") + '">' +
+          '<span class="cat-chip cat-' + esc(it.cat) + '">' + cat.label + "</span>" +
+          '<span class="step-text">' + esc(it.text) +
+          '<span class="for-habit">for ' + esc(it.habitName) + "</span></span>" +
+          (it.added ? '<span class="coach-note">Added</span>'
+                    : '<button class="btn btn-ghost" data-adopt="' + i + '">Add</button>') +
+          "</div>";
+      }
+      html += "</div>";
+    }
+    if (envAI.err) html += '<p class="coach-err">' + esc(envAI.err) + "</p>";
+  }
+  html += "</div>";
+
+  view.innerHTML = html;
+
+  view.querySelectorAll("[data-prime]").forEach(btn =>
+    btn.addEventListener("click", () => {
+      setPrimed(btn.dataset.prime, !isPrimed(btn.dataset.prime));
+      render();
+    }));
+  view.querySelectorAll("[data-addstep]").forEach(btn =>
+    btn.addEventListener("click", () => addEnvStep(btn.dataset.addstep)));
+  view.querySelectorAll("[data-steptext]").forEach(inp =>
+    inp.addEventListener("keydown", e => { if (e.key === "Enter") addEnvStep(inp.dataset.steptext); }));
+  view.querySelectorAll("[data-delstep]").forEach(btn =>
+    btn.addEventListener("click", () => {
+      const [hid, sid] = btn.dataset.delstep.split("|");
+      const h = state.habits.find(x => x.id === hid);
+      if (h) h.env = h.env.filter(s => s.id !== sid);
+      saveState(); render();
+    }));
+  const note = document.getElementById("spaceNote");
+  if (note) note.addEventListener("change", () => { state.spaceNote = note.value.trim(); saveState(); });
+  const go = document.getElementById("envGo");
+  if (go) go.addEventListener("click", runEnvAI);
+  const stop = document.getElementById("envStop");
+  if (stop) stop.addEventListener("click", () => { if (envAI.ctl) envAI.ctl.abort(); });
+  view.querySelectorAll("[data-adopt]").forEach(btn =>
+    btn.addEventListener("click", () => {
+      const it = envAI.items[Number(btn.dataset.adopt)];
+      const h = state.habits.find(x => x.id === it.habitId);
+      if (h && !it.added) {
+        h.env.push({ id: uid(), text: it.text, cat: it.cat });
+        it.added = true;
+        saveState(); render();
+      }
+    }));
+}
+
+function addEnvStep(habitId) {
+  const inp = document.querySelector('[data-steptext="' + habitId + '"]');
+  const sel = document.querySelector('[data-cat="' + habitId + '"]');
+  const text = inp.value.trim();
+  if (!text) { inp.focus(); return; }
+  const h = state.habits.find(x => x.id === habitId);
+  h.env.push({ id: uid(), text, cat: sel.value });
+  saveState(); render();
+}
+
+async function runEnvAI() {
+  const sample = sampleNS !== undefined ? sampleNS
+    : await (window.claude && window.claude.use ? window.claude.use("sample").catch(() => null) : null);
+  if (!sample) { sampleNS = null; render(); return; }
+
+  const note = document.getElementById("spaceNote");
+  if (note) { state.spaceNote = note.value.trim(); saveState(); }
+
+  envAI.status = "running"; envAI.err = ""; envAI.ctl = new AbortController();
+  render();
+  try {
+    const items = await sample.json(envPrompt(), { signal: envAI.ctl.signal });
+    if (!Array.isArray(items)) throw { code: "invalid_json", message: "not an array" };
+    envAI.items = items
+      .map(it => {
+        const h = state.habits.find(x => x.id === String(it.habitId));
+        const cat = ["cue", "friction", "hide"].indexOf(String(it.cat)) !== -1 ? String(it.cat) : "cue";
+        return h && it.step ? { habitId: h.id, habitName: h.name, cat, text: String(it.step).slice(0, 200), added: false } : null;
+      })
+      .filter(Boolean);
+    envAI.status = "done";
+    if (!envAI.items.length) envAI.err = "No usable suggestions came back — try adding a note about your spaces.";
+  } catch (e) {
+    envAI.status = "done";
+    envAI.err = e && e.code === "cancelled" ? "" :
+      e && e.code === "invalid_json" ? "Claude’s reply didn’t parse — try again." :
+      coachErrCopy(e && e.code);
+    if (e && (e.code === "not_granted" || e.code === "sampling_disabled" ||
+              e.code === "not_declared" || e.code === "capability_disabled")) {
+      sampleNS = null; envAI.err = "";
+    }
+  }
+  envAI.ctl = null;
+  if (activeTab === "env") render();
+}
+
+function envPrompt() {
+  const lines = [];
+  lines.push(
+    "You are an environment-design coach applying Atomic Habits by James Clear: environment beats willpower. " +
+    "Good habits need visible cues and low friction; bad habits and distractions should be invisible and hard.",
+    "",
+    "My habits and how they're going:");
+  for (const h of state.habits) {
+    const t = totals(h);
+    lines.push("- habitId " + h.id + ": " + h.name +
+      (h.location ? " (happens in " + h.location + ")" : "") +
+      (h.twoMin ? "; two-minute version: " + h.twoMin : "") +
+      "; kept " + t.done + " of " + t.scheduled + " scheduled days" +
+      (h.env.length ? "; existing setup steps: " + h.env.map(s => s.text).join(" / ") : "; no setup steps yet"));
+  }
+  if (state.spaceNote) lines.push("", "My spaces: " + state.spaceNote);
+  lines.push("",
+    "Suggest 1-2 environment tweaks per habit, prioritizing habits I keep least. Each must be a concrete " +
+    "one-line physical action I could do tonight (place, move, hide, prepare something) — not advice, not " +
+    "a repeat of my existing steps. Reply with ONLY a JSON array of objects " +
+    '{"habitId": string (from above), "cat": "cue"|"friction"|"hide", "step": string}. ' +
+    'Example: [{"habitId":"abc","cat":"cue","step":"Put the book on your pillow when you make the bed"}]');
+  return lines.join("\n");
 }
 
 /* ================= coach tab ================= */
@@ -1013,7 +1289,7 @@ function openHabitForm(existing) {
       days: [...days].sort((a, b) => a - b),
     };
     if (existing) Object.assign(existing, data);
-    else state.habits.push(Object.assign({ id: uid(), createdAt: todayIso() }, data));
+    else state.habits.push(Object.assign({ id: uid(), createdAt: todayIso(), env: [] }, data));
     saveState(); close();
     if (!existing) { activeTab = "today"; syncTabs(); toast("Chain started. Show up tomorrow."); }
     render();
@@ -1035,7 +1311,7 @@ document.getElementById("importBtn").addEventListener("click", () => {
     try {
       const s = JSON.parse(raw);
       if (!s || !Array.isArray(s.habits) || typeof s.log !== "object") throw new Error("bad shape");
-      state = s; saveState(); render();
+      state = normalizeState(s); saveState(); render();
       toast("Imported " + s.habits.length + " habit" + (s.habits.length === 1 ? "" : "s") + ".");
       return true;
     } catch (e) { toast("That doesn’t look like a valid export."); return false; }

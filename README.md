@@ -17,6 +17,11 @@ build step, no dependencies — one HTML file that stores everything in your bro
 - **Don't break the chain** — per-habit streaks, best streaks, and a 15-week heatmap.
 - **A daily tracker grid** — the classic paper habit tracker as a month view (habits ×
   days). Tap any past square to mark or fix a day; rest days show as dots.
+- **Environment design** — per habit, a list of setup steps in the book's three moves
+  (make the cue visible, cut the friction, hide the temptation), rolled up into a daily
+  "prime today's environment" checklist that resets each morning. With the AI runtime,
+  Claude studies your habits, where they slip, and an optional note about your spaces,
+  and suggests concrete physical tweaks you can adopt with one tap.
 - **An AI coach** — when the app runs as a Claude artifact, the Coach tab sends your
   habit designs and last four weeks of check-ins to Claude (on your account, with your
   consent) and streams back feedback: which of the Four Laws to adjust per habit,
