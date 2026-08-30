@@ -35,10 +35,12 @@ build step, no dependencies — one HTML file that stores everything in your bro
 
 ## Running it
 
-The app is live at **https://rydermeehan.github.io/fitness-tracker/** — every push to
-the working branch redeploys it via `.github/workflows/deploy-pages.yml`, which syncs
-`index.html` to the `gh-pages` branch. You can also just open `index.html` in any
-browser.
+The app is live at **https://fitness-tracker-eta-navy.vercel.app** (Vercel, linked to
+this repo — every push to the production branch auto-deploys) and at
+**https://rydermeehan.github.io/fitness-tracker/** (GitHub Pages, synced by
+`.github/workflows/deploy-pages.yml`). You can also just open `index.html` in any
+browser. Note that each host keeps its own browser storage — pick one home for your
+data, and use Export/Import to move it.
 
 Data lives in `localStorage`, private to your browser. Use **Export** / **Import** in
 the header to back it up or move it between devices.
