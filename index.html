@@ -1,0 +1,1744 @@
+<title>1% Better</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#f5f6f8">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#12151c">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..700&family=Instrument+Sans:ital,wght@0,400..700;1,400..700&display=swap">
+<style>
+  :root {
+    --ground: #f5f6f8;
+    --surface: #ffffff;
+    --surface-2: #eceef3;
+    --ink: #1c2130;
+    --ink-soft: #5a6172;
+    --ink-faint: #9aa1b1;
+    --line: #dde0e8;
+    --accent: #2f4aa8;
+    --accent-soft: #e4e9f7;
+    --done: #2e7d5b;
+    --done-soft: #e0efe8;
+    --warn: #a06a12;
+    --warn-soft: #f6ecd8;
+    --danger: #c2483c;
+    --danger-soft: #f7e4e2;
+    --cell-empty: #e6e8ee;
+    --shadow: 0 1px 2px rgba(28, 33, 48, 0.06), 0 4px 16px rgba(28, 33, 48, 0.05);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #12151c;
+      --surface: #1a1e28;
+      --surface-2: #232837;
+      --ink: #e8eaf1;
+      --ink-soft: #a4abbd;
+      --ink-faint: #6b7387;
+      --line: #2d3345;
+      --accent: #8ba1e8;
+      --accent-soft: #232c4a;
+      --done: #6fbf9a;
+      --done-soft: #1d3a2e;
+      --warn: #d9a84e;
+      --warn-soft: #3a2f17;
+      --danger: #e08278;
+      --danger-soft: #43221f;
+      --cell-empty: #252a38;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 4px 16px rgba(0, 0, 0, 0.3);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #12151c;
+    --surface: #1a1e28;
+    --surface-2: #232837;
+    --ink: #e8eaf1;
+    --ink-soft: #a4abbd;
+    --ink-faint: #6b7387;
+    --line: #2d3345;
+    --accent: #8ba1e8;
+    --accent-soft: #232c4a;
+    --done: #6fbf9a;
+    --done-soft: #1d3a2e;
+    --warn: #d9a84e;
+    --warn-soft: #3a2f17;
+    --danger: #e08278;
+    --danger-soft: #43221f;
+    --cell-empty: #252a38;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 4px 16px rgba(0, 0, 0, 0.3);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: "Instrument Sans", "Segoe UI", system-ui, sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  button { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+  .serif { font-family: "Newsreader", Georgia, serif; }
+
+  .app { max-width: 680px; margin: 0 auto; padding: 24px 20px 80px; }
+
+  /* ---------- header ---------- */
+  header { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 4px; }
+  .wordmark { font-family: "Newsreader", Georgia, serif; font-weight: 600; font-size: 24px; letter-spacing: -0.01em; }
+  .wordmark em { color: var(--accent); font-style: italic; }
+  .header-tools { display: flex; gap: 4px; }
+  .icon-btn {
+    border: none; background: none; color: var(--ink-faint); cursor: pointer;
+    font: inherit; font-size: 13px; padding: 4px 8px; border-radius: 6px;
+  }
+  .icon-btn:hover { color: var(--ink); background: var(--surface-2); }
+  .sync-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 12px; color: var(--ink-faint); padding: 4px 8px;
+  }
+  .sync-badge::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--ink-faint); }
+  .sync-badge.synced { color: var(--done); }
+  .sync-badge.synced::before { background: var(--done); }
+  .sync-badge.syncing::before { background: var(--warn); }
+  .sync-badge.error { color: var(--danger); }
+  .sync-badge.error::before { background: var(--danger); }
+
+  .identity-banner {
+    font-family: "Newsreader", Georgia, serif; font-style: italic;
+    font-size: 19px; line-height: 1.45; color: var(--ink-soft);
+    margin: 18px 0 26px; max-width: 34em; text-wrap: balance;
+  }
+  .identity-banner strong { color: var(--ink); font-weight: 600; }
+
+  /* ---------- tabs ---------- */
+  nav {
+    display: flex; gap: 4px; margin-bottom: 24px; overflow-x: auto;
+    background: var(--surface-2); border-radius: 999px; padding: 4px;
+    scrollbar-width: none;
+  }
+  nav::-webkit-scrollbar { display: none; }
+  nav button {
+    flex: none; font: inherit; font-weight: 600; font-size: 14px;
+    background: none; border: none; cursor: pointer; color: var(--ink-faint);
+    padding: 8px 15px; border-radius: 999px; -webkit-tap-highlight-color: transparent;
+  }
+  nav button[aria-selected="true"] {
+    color: var(--ink); background: var(--surface); box-shadow: var(--shadow);
+  }
+  nav button:focus-visible, .icon-btn:focus-visible, .habit-check:focus-visible,
+  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* ---------- today ---------- */
+  .today-date { color: var(--ink-faint); font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; margin: 0 0 14px; }
+  .today-list { display: flex; flex-direction: column; gap: 10px; }
+
+  .habit-row {
+    display: flex; align-items: center; gap: 14px;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 16px; box-shadow: var(--shadow); transition: opacity 0.15s;
+  }
+  .habit-row.done-row { opacity: 0.72; }
+  .habit-check {
+    flex: none; width: 30px; height: 30px; border-radius: 50%;
+    border: 2px solid var(--ink-faint); background: none; cursor: pointer;
+    display: grid; place-items: center; color: transparent; transition: all 0.12s;
+    font-size: 15px; line-height: 1; padding: 0;
+  }
+  .habit-check:hover { border-color: var(--done); }
+  .habit-check.checked { background: var(--done); border-color: var(--done); color: #fff; }
+  .habit-main { flex: 1; min-width: 0; }
+  .habit-name { font-weight: 600; }
+  .habit-row.done-row .habit-name { text-decoration: line-through; text-decoration-thickness: 1px; }
+  .habit-sub { font-size: 13px; color: var(--ink-soft); margin-top: 1px; }
+  .habit-sub .twomin { color: var(--accent); }
+  .streak-chip {
+    flex: none; font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums;
+    color: var(--ink-soft); background: var(--surface-2); border-radius: 999px; padding: 3px 10px;
+  }
+  .streak-chip.hot { color: var(--warn); background: var(--warn-soft); }
+
+  .slip-note {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    border-radius: 10px; padding: 10px 14px; font-size: 13.5px; margin-bottom: 14px;
+  }
+  .slip-note.gentle { background: var(--warn-soft); color: var(--warn); }
+  .slip-note.urgent { background: var(--danger-soft); color: var(--danger); }
+  .slip-note button {
+    font: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
+    border: 1px solid currentColor; background: none; color: inherit;
+    border-radius: 999px; padding: 2px 12px;
+  }
+
+  .day-summary { margin-top: 22px; font-size: 13.5px; color: var(--ink-faint); }
+
+  /* ---------- voice guide ---------- */
+  .guide-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+    box-shadow: var(--shadow); padding: 14px 16px; margin-bottom: 16px;
+  }
+  .guide-controls { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .guide-play {
+    font: inherit; font-weight: 600; font-size: 14px; cursor: pointer;
+    border: none; border-radius: 999px; padding: 8px 18px;
+    background: var(--accent); color: #fff; display: inline-flex; align-items: center; gap: 8px;
+  }
+  .guide-play:hover { filter: brightness(1.08); }
+  .guide-play.stop { background: var(--danger); }
+  .guide-controls select {
+    font: inherit; font-size: 12.5px; color: var(--ink-soft); background: var(--ground);
+    border: 1px solid var(--line); border-radius: 8px; padding: 5px 6px; max-width: 150px;
+  }
+  .guide-controls select:focus { outline: none; border-color: var(--accent); }
+  .guide-transcript { margin-top: 12px; font-size: 14.5px; line-height: 1.65; color: var(--ink-soft); }
+  .guide-transcript span { border-radius: 4px; padding: 1px 2px; }
+  .guide-transcript span.said { color: var(--ink); }
+  .guide-transcript span.saying { color: var(--ink); background: var(--accent-soft); }
+  .guide-note { font-size: 12.5px; color: var(--ink-faint); margin: 8px 0 0; }
+  .guide-err { font-size: 13px; color: var(--danger); margin: 8px 0 0; }
+
+  /* ---------- empty state ---------- */
+  .empty {
+    text-align: center; padding: 48px 24px; background: var(--surface);
+    border: 1px dashed var(--line); border-radius: 16px;
+  }
+  .empty h2 { font-family: "Newsreader", Georgia, serif; font-weight: 600; font-size: 24px; margin: 0 0 8px; }
+  .empty p { color: var(--ink-soft); max-width: 30em; margin: 0 auto 20px; }
+
+  /* ---------- front page hero ---------- */
+  .hero { text-align: center; padding: 16px 0 8px; }
+  .hero svg { width: min(340px, 88%); height: auto; display: block; margin: 0 auto 8px; }
+  .hero h2 {
+    font-family: "Newsreader", Georgia, serif; font-weight: 600; letter-spacing: -0.015em;
+    font-size: clamp(30px, 8.5vw, 40px); line-height: 1.12; margin: 10px 0 12px; text-wrap: balance;
+  }
+  .hero h2 em { font-style: italic; color: var(--accent); }
+  .hero > p { color: var(--ink-soft); font-size: 16px; max-width: 26em; margin: 0 auto 22px; text-wrap: balance; }
+  .btn-hero {
+    font: inherit; font-weight: 700; font-size: 16px; color: #fff; cursor: pointer;
+    border: none; border-radius: 999px; padding: 14px 30px;
+    background: linear-gradient(120deg, var(--accent), var(--done));
+    box-shadow: 0 6px 20px rgba(47, 74, 168, 0.28);
+  }
+  .btn-hero:hover { filter: brightness(1.07); }
+  .hero-feats { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 26px; }
+  .feat {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 999px;
+    padding: 8px 14px; font-size: 13px; font-weight: 500; color: var(--ink-soft);
+  }
+  .feat svg { width: 15px; height: 15px; flex: none; }
+
+  /* ---------- buttons ---------- */
+  .btn {
+    font: inherit; font-weight: 600; cursor: pointer; border-radius: 10px;
+    padding: 9px 18px; border: 1px solid transparent;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { filter: brightness(1.08); }
+  .btn-ghost { background: none; border-color: var(--line); color: var(--ink); }
+  .btn-ghost:hover { background: var(--surface-2); }
+  .btn-danger { background: none; border-color: var(--danger); color: var(--danger); }
+
+  /* ---------- habits tab ---------- */
+  .habits-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  .habits-head h2 { font-size: 15px; font-weight: 600; margin: 0; color: var(--ink-soft); }
+  .habit-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+    box-shadow: var(--shadow); margin-bottom: 12px; overflow: hidden;
+  }
+  .habit-card summary {
+    list-style: none; cursor: pointer; padding: 14px 16px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .habit-card summary::-webkit-details-marker { display: none; }
+  .habit-card summary .habit-name { flex: 1; }
+  .habit-card .days-label { font-size: 12px; color: var(--ink-faint); letter-spacing: 0.04em; }
+  .law-list { padding: 4px 16px 14px; border-top: 1px solid var(--line); }
+  .law-item { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .law-item:last-child { border-bottom: none; }
+  .law-tag {
+    flex: none; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em;
+    color: var(--accent); width: 92px; padding-top: 2px;
+  }
+  .law-text { color: var(--ink-soft); font-size: 14px; }
+  .law-text b { color: var(--ink); font-weight: 600; }
+  .card-actions { display: flex; gap: 8px; padding: 0 16px 14px; }
+  .card-actions .btn { padding: 5px 14px; font-size: 13px; }
+
+  /* ---------- tracker tab ---------- */
+  .tracker-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .tracker-head h2 { font-family: "Newsreader", Georgia, serif; font-weight: 600; font-size: 19px; margin: 0; }
+  .month-nav { display: flex; gap: 6px; }
+  .month-nav button {
+    font: inherit; font-size: 14px; cursor: pointer; width: 32px; height: 32px;
+    border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--ink-soft);
+  }
+  .month-nav button:hover { background: var(--surface-2); }
+  .tracker-scroll {
+    overflow-x: auto; background: var(--surface); border: 1px solid var(--line);
+    border-radius: 12px; box-shadow: var(--shadow); padding: 14px 12px;
+  }
+  table.tracker { border-collapse: collapse; }
+  .tracker th, .tracker td { padding: 2px; text-align: center; }
+  .tracker th {
+    font-size: 10.5px; font-weight: 500; color: var(--ink-faint);
+    font-variant-numeric: tabular-nums; min-width: 24px;
+  }
+  .tracker th.today-col { color: var(--accent); font-weight: 700; }
+  .tracker .h-name {
+    text-align: left; font-size: 13px; font-weight: 600; color: var(--ink);
+    position: sticky; left: 0; background: var(--surface); padding-right: 12px;
+    max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .t-cell {
+    display: inline-block; width: 20px; height: 20px; border-radius: 6px;
+    border: none; padding: 0; cursor: pointer; background: var(--cell-empty); vertical-align: middle;
+  }
+  button.t-cell:hover { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .t-cell.t-done { background: var(--done); }
+  .t-cell.t-off { background: none; cursor: default; position: relative; }
+  .t-cell.t-off::after { content: "·"; color: var(--ink-faint); }
+  .t-cell.t-na { background: none; cursor: default; }
+  .tracker-hint { font-size: 12.5px; color: var(--ink-faint); margin-top: 12px; }
+
+  /* ---------- environment tab ---------- */
+  .env-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+    box-shadow: var(--shadow); padding: 16px; margin-bottom: 14px;
+  }
+  .env-card h3 { font-family: "Newsreader", Georgia, serif; font-weight: 600; font-size: 19px; margin: 0 0 4px; }
+  .env-card > p { color: var(--ink-soft); font-size: 13.5px; margin: 0 0 12px; max-width: 42em; }
+  .prime-row { display: flex; align-items: center; gap: 10px; padding: 7px 0; }
+  .prime-row + .prime-row { border-top: 1px solid var(--line); }
+  .prime-check {
+    flex: none; width: 22px; height: 22px; border-radius: 7px; padding: 0;
+    border: 2px solid var(--ink-faint); background: none; cursor: pointer;
+    display: grid; place-items: center; color: transparent; font-size: 12px; line-height: 1;
+  }
+  .prime-check.checked { background: var(--done); border-color: var(--done); color: #fff; }
+  .prime-text { flex: 1; font-size: 14px; }
+  .prime-row.primed .prime-text { color: var(--ink-faint); text-decoration: line-through; text-decoration-thickness: 1px; }
+  .prime-habit { font-size: 12px; color: var(--ink-faint); flex: none; }
+  .prime-done-note { font-size: 13px; color: var(--done); margin: 8px 0 0; }
+
+  .env-habit { border-top: 1px solid var(--line); padding: 12px 0; }
+  .env-habit:first-of-type { border-top: none; padding-top: 4px; }
+  .env-habit .habit-name { font-size: 14px; margin-bottom: 6px; }
+  .env-step { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
+  .cat-chip {
+    flex: none; font-size: 10.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+    border-radius: 999px; padding: 2px 8px; background: var(--accent-soft); color: var(--accent);
+  }
+  .cat-chip.cat-friction { background: var(--done-soft); color: var(--done); }
+  .cat-chip.cat-hide { background: var(--danger-soft); color: var(--danger); }
+  .env-step .step-text { flex: 1; font-size: 13.5px; color: var(--ink); }
+  .step-del {
+    flex: none; border: none; background: none; color: var(--ink-faint); cursor: pointer;
+    font-size: 15px; line-height: 1; padding: 2px 6px; border-radius: 6px;
+  }
+  .step-del:hover { color: var(--danger); background: var(--danger-soft); }
+  .env-add { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+  .env-add select, .env-add input {
+    font: inherit; font-size: 13px; color: var(--ink); background: var(--ground);
+    border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px;
+  }
+  .env-add input { flex: 1; min-width: 160px; }
+  .env-add select:focus, .env-add input:focus { outline: none; border-color: var(--accent); }
+  .env-add .btn { padding: 5px 14px; font-size: 13px; }
+
+  .space-note {
+    width: 100%; font: inherit; font-size: 13.5px; color: var(--ink); background: var(--ground);
+    border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px;
+    min-height: 56px; resize: vertical; margin-bottom: 10px;
+  }
+  .space-note:focus { outline: none; border-color: var(--accent); }
+  .suggestion { display: flex; align-items: center; gap: 8px; padding: 7px 0; border-top: 1px solid var(--line); }
+  .suggestion .step-text { flex: 1; font-size: 13.5px; }
+  .suggestion .for-habit { display: block; font-size: 11.5px; color: var(--ink-faint); }
+  .suggestion .btn { flex: none; padding: 4px 12px; font-size: 12.5px; }
+  .suggestion.added .step-text { color: var(--ink-faint); }
+
+  /* ---------- coach tab ---------- */
+  .coach-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+    box-shadow: var(--shadow); padding: 18px; margin-bottom: 14px;
+  }
+  .coach-card h3 { font-family: "Newsreader", Georgia, serif; font-weight: 600; font-size: 19px; margin: 0 0 4px; }
+  .coach-card > p { color: var(--ink-soft); font-size: 13.5px; margin: 0 0 14px; max-width: 42em; }
+  .coach-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .coach-note { font-size: 13px; color: var(--ink-faint); }
+  .coach-out { margin-top: 4px; font-size: 14.5px; }
+  .coach-out h4 {
+    font-size: 11.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em;
+    color: var(--accent); margin: 18px 0 6px;
+  }
+  .coach-out p { margin: 8px 0; color: var(--ink); }
+  .coach-out ul { margin: 6px 0; padding-left: 20px; }
+  .coach-out li { margin: 4px 0; color: var(--ink); }
+  .coach-out .thinking { color: var(--ink-faint); font-style: italic; }
+  .coach-err { font-size: 13.5px; color: var(--danger); margin-top: 10px; }
+
+  /* ---------- progress tab ---------- */
+  .progress-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+    box-shadow: var(--shadow); padding: 16px; margin-bottom: 14px;
+  }
+  .progress-top { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
+  .progress-top .habit-name { font-size: 15px; }
+  .stat-row { display: flex; gap: 22px; margin: 6px 0 14px; flex-wrap: wrap; }
+  .stat { font-size: 13px; color: var(--ink-faint); }
+  .stat b { display: block; font-size: 19px; font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .heatmap-scroll { overflow-x: auto; padding-bottom: 4px; }
+  .heatmap { display: grid; grid-auto-flow: column; grid-template-rows: repeat(7, 11px); gap: 3px; width: max-content; }
+  .heatmap i {
+    width: 11px; height: 11px; border-radius: 2.5px; background: var(--cell-empty);
+  }
+  .heatmap i.off { background: none; border: 1px solid var(--cell-empty); }
+  .heatmap i.hit { background: var(--done); }
+  .heatmap i.future { background: none; }
+  .compound-card h3 { font-family: "Newsreader", Georgia, serif; font-weight: 600; font-size: 19px; margin: 0 0 2px; }
+  .compound-card p { color: var(--ink-soft); font-size: 13.5px; margin: 0 0 12px; max-width: 40em; }
+  #compoundChart { width: 100%; height: 180px; display: block; }
+
+  /* ---------- modal ---------- */
+  .overlay {
+    position: fixed; inset: 0; background: rgba(15, 18, 28, 0.45);
+    display: grid; place-items: center; padding: 20px; z-index: 10; overflow-y: auto;
+  }
+  .modal {
+    background: var(--surface); border-radius: 16px; box-shadow: var(--shadow);
+    width: 100%; max-width: 520px; padding: 24px; margin: auto;
+  }
+  .modal h2 { font-family: "Newsreader", Georgia, serif; font-weight: 600; font-size: 22px; margin: 0 0 4px; }
+  .modal .modal-sub { color: var(--ink-soft); font-size: 13.5px; margin: 0 0 18px; }
+  .law-section { border-top: 1px solid var(--line); padding: 14px 0; }
+  .law-section > .law-head {
+    font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em;
+    color: var(--accent); margin-bottom: 10px;
+  }
+  .field { margin-bottom: 12px; }
+  .field:last-child { margin-bottom: 0; }
+  .field label { display: block; font-size: 13px; font-weight: 500; color: var(--ink-soft); margin-bottom: 4px; }
+  .field input[type="text"], .field textarea {
+    width: 100%; font: inherit; font-size: 14px; color: var(--ink);
+    background: var(--ground); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px;
+  }
+  .field input:focus, .field textarea:focus { outline: none; border-color: var(--accent); }
+  .field .hint { font-size: 12px; color: var(--ink-faint); margin-top: 3px; }
+  .sentence-preview {
+    font-family: "Newsreader", Georgia, serif; font-style: italic; font-size: 15px;
+    color: var(--ink); background: var(--accent-soft); border-radius: 8px; padding: 10px 12px; margin-top: 8px;
+  }
+  .day-picker { display: flex; gap: 6px; }
+  .day-picker button {
+    font: inherit; font-size: 12.5px; font-weight: 600; width: 38px; height: 32px;
+    border-radius: 8px; border: 1px solid var(--line); background: none; color: var(--ink-faint); cursor: pointer;
+  }
+  .day-picker button.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+  .modal textarea.io { min-height: 140px; font-family: ui-monospace, monospace; font-size: 12px; resize: vertical; }
+
+  /* ---------- toast ---------- */
+  #toast {
+    position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%) translateY(8px);
+    background: var(--ink); color: var(--ground); font-size: 14px;
+    border-radius: 999px; padding: 9px 20px; opacity: 0; pointer-events: none;
+    transition: opacity 0.2s, transform 0.2s; z-index: 20; max-width: 90vw; text-align: center;
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  #toast .serif { font-style: italic; }
+
+  /* ---------- mobile (last so it wins the cascade) ---------- */
+  @media (max-width: 640px) {
+    .app { padding: 18px 14px 72px; }
+    .habit-check { width: 36px; height: 36px; }
+    .prime-check { width: 26px; height: 26px; }
+    .t-cell { width: 24px; height: 24px; border-radius: 7px; }
+    .tracker th { min-width: 28px; }
+    .btn { padding: 11px 20px; }
+    .card-actions .btn, .env-add .btn, .suggestion .btn { padding: 8px 16px; }
+    .field input[type="text"], .field textarea, .env-add input, .env-add select,
+    .space-note, .modal textarea.io { font-size: 16px; } /* keeps iOS from zooming on focus */
+    .day-picker { width: 100%; }
+    .day-picker button { flex: 1; height: 40px; }
+    .modal { padding: 20px 16px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+</style>
+
+<div class="app">
+  <header>
+    <div class="wordmark">1<em>%</em> Better</div>
+    <div class="header-tools">
+      <span class="sync-badge" id="syncBadge" hidden></span>
+      <button class="icon-btn" id="exportBtn" title="Back up or move your data">Export</button>
+      <button class="icon-btn" id="importBtn">Import</button>
+    </div>
+  </header>
+
+  <p class="identity-banner" id="identityBanner"></p>
+
+  <nav role="tablist">
+    <button role="tab" data-tab="today" aria-selected="true">Today</button>
+    <button role="tab" data-tab="tracker" aria-selected="false">Tracker</button>
+    <button role="tab" data-tab="habits" aria-selected="false">Habits</button>
+    <button role="tab" data-tab="progress" aria-selected="false">Progress</button>
+    <button role="tab" data-tab="env" aria-selected="false">Environment</button>
+    <button role="tab" data-tab="coach" aria-selected="false">Coach</button>
+  </nav>
+
+  <main id="view"></main>
+</div>
+
+<div id="toast" role="status"></div>
+<div id="modalRoot"></div>
+
+<script>
+"use strict";
+
+/* ================= storage ================= */
+const STORE_KEY = "onepercent.v1";
+function normalizeState(s) {
+  for (const h of s.habits) if (!Array.isArray(h.env)) h.env = [];
+  if (!s.prime || typeof s.prime !== "object") s.prime = {};
+  if (typeof s.spaceNote !== "string") s.spaceNote = "";
+  return s;
+}
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    if (raw) {
+      const s = JSON.parse(raw);
+      if (s && Array.isArray(s.habits) && s.log && typeof s.log === "object") return normalizeState(s);
+    }
+  } catch (e) { /* storage unavailable or corrupt: start fresh */ }
+  return normalizeState({ habits: [], log: {} });
+}
+function saveState() {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
+  catch (e) { /* private mode etc. — app still works for the session */ }
+  scheduleCloudPush();
+}
+let state = loadState();
+
+/* ================= cloud sync (artifact db capability) ================= */
+const cloud = { ref: null, timer: null, retried: false };
+
+function coreState() {
+  return { habits: state.habits, log: state.log, prime: state.prime, spaceNote: state.spaceNote };
+}
+function setSyncBadge(mode) {
+  const el = document.getElementById("syncBadge");
+  if (!el) return;
+  const labels = { syncing: "Syncing…", synced: "Synced", error: "Sync error — data kept locally" };
+  el.hidden = !labels[mode];
+  el.className = "sync-badge " + (mode || "");
+  el.textContent = labels[mode] || "";
+}
+function applyRemote(data) {
+  if (!data) return;
+  const incoming = normalizeState({
+    habits: Array.isArray(data.habits) ? data.habits : [],
+    log: data.log && typeof data.log === "object" ? data.log : {},
+    prime: data.prime, spaceNote: data.spaceNote,
+  });
+  if (JSON.stringify(incoming) === JSON.stringify(coreState())) return;
+  state = incoming;
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) { /* fallback cache only */ }
+  render();
+}
+function scheduleCloudPush() {
+  if (!cloud.ref) return;
+  clearTimeout(cloud.timer);
+  setSyncBadge("syncing");
+  cloud.timer = setTimeout(pushCloud, 600);
+}
+async function pushCloud() {
+  if (!cloud.ref) return;
+  try {
+    await cloud.ref.set(coreState());
+    cloud.retried = false;
+    setSyncBadge("synced");
+  } catch (e) {
+    if (e && e.code === "unavailable" && !cloud.retried) {
+      cloud.retried = true;
+      setTimeout(pushCloud, 1500 + Math.random() * 1500);
+      return;
+    }
+    cloud.retried = false;
+    setSyncBadge(e && e.code === "revoked" ? "" : "error");
+    if (e && e.code === "revoked") cloud.ref = null;
+  }
+}
+(async () => {
+  if (!(window.claude && window.claude.use)) return;
+  let db = null;
+  try { db = await window.claude.use("db"); } catch (e) { /* treat as unavailable */ }
+  if (!db) return;
+  const ref = db.doc("app/state");
+  setSyncBadge("syncing");
+  try {
+    const snap = await ref.get();
+    cloud.ref = ref;
+    if (snap.exists) {
+      applyRemote(snap.data());
+      setSyncBadge("synced");
+    } else {
+      await ref.set(coreState()); // first run in the cloud: seed from this browser
+      setSyncBadge("synced");
+    }
+    ref.onSnapshot(s => {
+      if (!s.exists || s.metadata.hasPendingWrites) return;
+      applyRemote(s.data());
+    }, () => { cloud.ref = null; setSyncBadge("error"); });
+  } catch (e) {
+    setSyncBadge("error");
+  }
+})();
+
+/* ================= dates ================= */
+const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+function iso(d) {
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+}
+function daysAgo(n) { const d = new Date(); d.setDate(d.getDate() - n); return d; }
+function todayIso() { return iso(new Date()); }
+
+function isDone(habitId, dateIso) {
+  const day = state.log[dateIso];
+  return !!(day && day.indexOf(habitId) !== -1);
+}
+function setDone(habitId, dateIso, done) {
+  let day = state.log[dateIso] || [];
+  if (done && day.indexOf(habitId) === -1) day = day.concat(habitId);
+  if (!done) day = day.filter(id => id !== habitId);
+  if (day.length) state.log[dateIso] = day; else delete state.log[dateIso];
+  saveState();
+}
+function scheduledOn(habit, date) { return habit.days.indexOf(date.getDay()) !== -1; }
+
+/* ================= stats ================= */
+function streak(habit) {
+  // Count back over scheduled days; today only counts if already done.
+  let n = 0;
+  for (let i = 0; i < 3660; i++) {
+    const d = daysAgo(i);
+    if (iso(d) < habit.createdAt && i > 0) break;
+    if (!scheduledOn(habit, d)) continue;
+    if (isDone(habit.id, iso(d))) { n++; continue; }
+    if (i === 0) continue; // today isn't over yet
+    break;
+  }
+  return n;
+}
+function bestStreak(habit) {
+  let best = 0, cur = 0;
+  const start = new Date(habit.createdAt + "T12:00:00");
+  const today = new Date();
+  for (let d = new Date(start); iso(d) <= iso(today); d.setDate(d.getDate() + 1)) {
+    if (!scheduledOn(habit, d)) continue;
+    if (isDone(habit.id, iso(d))) { cur++; best = Math.max(best, cur); }
+    else if (iso(d) !== todayIso()) cur = 0;
+  }
+  return Math.max(best, streak(habit));
+}
+function totals(habit) {
+  let done = 0, scheduled = 0;
+  const start = new Date(habit.createdAt + "T12:00:00");
+  const today = new Date();
+  for (let d = new Date(start); iso(d) <= iso(today); d.setDate(d.getDate() + 1)) {
+    if (!scheduledOn(habit, d)) continue;
+    scheduled++;
+    if (isDone(habit.id, iso(d))) done++;
+  }
+  return { done, scheduled };
+}
+function missedYesterday(habit) {
+  const y = daysAgo(1);
+  return iso(y) >= habit.createdAt && scheduledOn(habit, y) && !isDone(habit.id, iso(y));
+}
+function missedTwice(habit) {
+  if (!missedYesterday(habit)) return false;
+  const d2 = daysAgo(2);
+  return iso(d2) >= habit.createdAt && scheduledOn(habit, d2) && !isDone(habit.id, iso(d2));
+}
+
+/* ================= helpers ================= */
+function esc(s) {
+  return String(s == null ? "" : s).replace(/[&<>"']/g, c =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+let toastTimer = null;
+function toast(html) {
+  const t = document.getElementById("toast");
+  t.innerHTML = html;
+  t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("show"), 2600);
+}
+function daysLabel(days) {
+  if (days.length === 7) return "Every day";
+  if (days.length === 5 && days.indexOf(0) === -1 && days.indexOf(6) === -1) return "Weekdays";
+  if (days.length === 2 && days.indexOf(0) !== -1 && days.indexOf(6) !== -1) return "Weekends";
+  return days.slice().sort((a, b) => a - b).map(d => DAY_NAMES[d]).join(" · ");
+}
+
+/* ================= identity banner ================= */
+function renderBanner() {
+  const el = document.getElementById("identityBanner");
+  const ids = [...new Set(state.habits.map(h => (h.identity || "").trim()).filter(Boolean))];
+  if (!ids.length) {
+    el.innerHTML = "Every action you take is a vote for the type of person you wish to become.";
+    return;
+  }
+  const votes = state.habits.reduce((n, h) => n + totals(h).done, 0);
+  const list = ids.slice(0, 3).map(s => "<strong>" + esc(s) + "</strong>").join(", ");
+  el.innerHTML = "You are becoming " + list + (ids.length > 3 ? ", …" : "") +
+    " — <strong>" + votes + "</strong> vote" + (votes === 1 ? "" : "s") + " cast so far.";
+}
+
+/* ================= front page art ================= */
+const ICONS = {
+  check: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6.3"/><path d="M5.3 8.3l1.9 1.9 3.5-4.2"/></svg>',
+  chain: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="3" cy="8" r="1.7"/><circle cx="8" cy="8" r="1.7"/><circle cx="13" cy="8" r="1.7"/><path d="M4.7 8h1.6M9.7 8h1.6"/></svg>',
+  voice: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 6.5v3M6 4v8M9 5.5v5M12 3v10"/></svg>',
+  cloud: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4.6 11.5a3 3 0 01-.2-6A4 4 0 0112 6.7a2.6 2.6 0 01-.7 4.8z"/></svg>',
+};
+function feat(icon, label) {
+  return '<span class="feat">' + icon + esc(label) + "</span>";
+}
+function heroArt() {
+  // The compounding chain: daily votes tracing the 1% curve.
+  const pts = [[20, 190], [60, 186], [100, 180], [140, 171], [176, 159], [210, 143], [242, 121], [270, 96], [294, 68]];
+  const dots = pts.map((p, i) => {
+    const r = 3.2 + i * 0.55;
+    const fill = i < 3 ? "var(--ink-faint)" : i < 6 ? "var(--accent)" : "var(--done)";
+    return '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="' + r.toFixed(1) + '" fill="' + fill + '"' +
+      (i < 3 ? ' opacity="0.55"' : "") + "/>";
+  }).join("");
+  return '<svg viewBox="0 0 360 230" role="img" aria-label="A chain of daily habits compounding along a rising curve">' +
+    '<defs><linearGradient id="heroStroke" x1="0" y1="1" x2="1" y2="0">' +
+    '<stop offset="0" stop-color="var(--accent)"/><stop offset="1" stop-color="var(--done)"/></linearGradient>' +
+    '<linearGradient id="heroFill" x1="0" y1="0" x2="0" y2="1">' +
+    '<stop offset="0" stop-color="var(--done)" stop-opacity="0.16"/>' +
+    '<stop offset="1" stop-color="var(--accent)" stop-opacity="0"/></linearGradient></defs>' +
+    ['46', '94', '142', '190'].map(y =>
+      '<line x1="12" y1="' + y + '" x2="348" y2="' + y + '" stroke="var(--line)" stroke-width="1" stroke-dasharray="1 5"/>').join("") +
+    '<path d="M20 190 C110 184 190 165 244 120 S312 52 322 40 L322 190 Z" fill="url(#heroFill)"/>' +
+    '<path d="M20 190 C110 184 190 165 244 120 S312 52 322 40" fill="none" stroke="url(#heroStroke)" stroke-width="3" stroke-linecap="round"/>' +
+    dots +
+    '<circle cx="322" cy="40" r="11" fill="var(--done)"/>' +
+    '<path d="M317 40.5l3.4 3.4 6-7" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>' +
+    '<path d="M343 18l1.6 4.4 4.4 1.6-4.4 1.6-1.6 4.4-1.6-4.4-4.4-1.6 4.4-1.6z" fill="var(--warn)"/>' +
+    '<text x="20" y="212" font-family="Instrument Sans, sans-serif" font-size="11" fill="var(--ink-faint)">day one</text>' +
+    '<text x="340" y="212" text-anchor="end" font-family="Instrument Sans, sans-serif" font-size="11" fill="var(--ink-faint)">1.01³⁶⁵ ≈ 37×</text>' +
+    "</svg>";
+}
+
+/* ================= tabs ================= */
+let activeTab = "today";
+document.querySelectorAll("nav [role=tab]").forEach(btn => {
+  btn.addEventListener("click", () => {
+    activeTab = btn.dataset.tab;
+    document.querySelectorAll("nav [role=tab]").forEach(b =>
+      b.setAttribute("aria-selected", String(b === btn)));
+    render();
+  });
+});
+
+function render() {
+  renderBanner();
+  const view = document.getElementById("view");
+  if (!state.habits.length && activeTab !== "habits") {
+    view.innerHTML =
+      '<div class="hero">' +
+      heroArt() +
+      "<h2>Tiny habits.<br><em>Remarkable</em> results.</h2>" +
+      "<p>You don’t rise to the level of your goals — you fall to the level of your systems. " +
+      "Build yours one two-minute habit at a time.</p>" +
+      '<button class="btn-hero" id="emptyAdd">Design your first habit</button>' +
+      '<div class="hero-feats">' +
+      feat(ICONS.check, "The Four Laws") +
+      feat(ICONS.chain, "Don’t break the chain") +
+      feat(ICONS.voice, "AI coach & voice guide") +
+      feat(ICONS.cloud, "Synced across devices") +
+      "</div></div>";
+    document.getElementById("emptyAdd").addEventListener("click", () => openHabitForm(null));
+    return;
+  }
+  if (activeTab === "today") renderToday(view);
+  else if (activeTab === "tracker") renderTracker(view);
+  else if (activeTab === "habits") renderHabits(view);
+  else if (activeTab === "env") renderEnv(view);
+  else if (activeTab === "coach") renderCoach(view);
+  else renderProgress(view);
+}
+
+/* ================= voice guide ================= */
+const VOICE_KEY = "onepercent.voice";
+const voicePrefs = (() => {
+  try {
+    const p = JSON.parse(localStorage.getItem(VOICE_KEY));
+    if (p && typeof p === "object") return { voiceURI: String(p.voiceURI || ""), rate: Number(p.rate) || 1 };
+  } catch (e) { /* per-device convenience only */ }
+  return { voiceURI: "", rate: 1 };
+})();
+function saveVoicePrefs() {
+  try { localStorage.setItem(VOICE_KEY, JSON.stringify(voicePrefs)); } catch (e) { /* best effort */ }
+}
+const speech = {
+  supported: typeof window.speechSynthesis !== "undefined" && typeof window.SpeechSynthesisUtterance !== "undefined",
+};
+function pickVoice() {
+  const vs = speechSynthesis.getVoices();
+  return vs.find(v => v.voiceURI === voicePrefs.voiceURI) ||
+    vs.find(v => v.default && v.lang.startsWith("en")) || vs.find(v => v.lang.startsWith("en")) || vs[0] || null;
+}
+function speakSentence(text, onstart, onend) {
+  try {
+    const u = new SpeechSynthesisUtterance(text);
+    const v = pickVoice();
+    if (v) u.voice = v;
+    u.rate = voicePrefs.rate;
+    if (onstart) u.onstart = onstart;
+    if (onend) { u.onend = onend; u.onerror = onend; }
+    speechSynthesis.speak(u); // queues after anything already speaking
+  } catch (e) { /* speech failed — the transcript still carries the guide */ }
+}
+function stopSpeaking() {
+  try { if (speech.supported) speechSynthesis.cancel(); } catch (e) { /* nothing to stop */ }
+}
+if (speech.supported && typeof speechSynthesis.onvoiceschanged !== "undefined") {
+  speechSynthesis.onvoiceschanged = () => {
+    const sel = document.getElementById("guideVoice");
+    if (sel) populateVoiceSelect(sel);
+  };
+}
+function populateVoiceSelect(sel) {
+  const vs = speechSynthesis.getVoices();
+  sel.hidden = !vs.length;
+  sel.innerHTML = vs.map(v =>
+    '<option value="' + esc(v.voiceURI) + '"' + (pickVoice() === v ? " selected" : "") + ">" +
+    esc(v.name) + "</option>").join("");
+}
+
+const guide = { status: "idle", sentences: [], buf: "", ctl: null, sayingIdx: -1, err: "" };
+
+function guideMarkup() {
+  let html = '<div class="guide-card"><div class="guide-controls">';
+  html += guide.status === "running"
+    ? '<button class="guide-play stop" id="guideBtn">■ Stop</button>'
+    : '<button class="guide-play" id="guideBtn">▶ ' + (guide.sentences.length ? "Guide me again" : "Start my day") + "</button>";
+  if (speech.supported) {
+    html += '<select id="guideVoice" aria-label="Voice" hidden></select>' +
+      '<select id="guideRate" aria-label="Pace">' +
+      [[0.85, "Calm"], [1, "Normal"], [1.15, "Brisk"]].map(([r, l]) =>
+        '<option value="' + r + '"' + (Math.abs(voicePrefs.rate - r) < 0.01 ? " selected" : "") + ">" + l + "</option>").join("") +
+      "</select>";
+  }
+  html += "</div>";
+  if (guide.sentences.length || guide.status === "running") {
+    html += '<div class="guide-transcript" id="guideTranscript">' + transcriptMarkup() + "</div>";
+  }
+  if (!speech.supported) html += '<p class="guide-note">No speech voices in this browser — the guide will be text only.</p>';
+  if (guide.err) html += '<p class="guide-err">' + esc(guide.err) + "</p>";
+  html += "</div>";
+  return html;
+}
+function transcriptMarkup() {
+  if (guide.status === "running" && !guide.sentences.length) return '<span class="saying">Thinking…</span>';
+  return guide.sentences.map((s, i) =>
+    "<span" + (i === guide.sayingIdx ? ' class="saying"' : (i < guide.sayingIdx || guide.sayingIdx === -1 ? ' class="said"' : "")) +
+    ' id="gs-' + i + '">' + esc(s) + "</span>").join(" ");
+}
+function refreshTranscript() {
+  const el = document.getElementById("guideTranscript");
+  if (el) el.innerHTML = transcriptMarkup();
+}
+function wireGuideCard(root) {
+  const btn = root.querySelector("#guideBtn");
+  if (btn) btn.addEventListener("click", () => {
+    if (guide.status === "running") stopGuide(); else runGuide();
+  });
+  const vSel = root.querySelector("#guideVoice");
+  if (vSel) {
+    populateVoiceSelect(vSel);
+    vSel.addEventListener("change", () => { voicePrefs.voiceURI = vSel.value; saveVoicePrefs(); });
+  }
+  const rSel = root.querySelector("#guideRate");
+  if (rSel) rSel.addEventListener("change", () => { voicePrefs.rate = Number(rSel.value) || 1; saveVoicePrefs(); });
+}
+function stopGuide() {
+  if (guide.ctl) guide.ctl.abort();
+  stopSpeaking();
+  guide.status = "idle"; guide.sayingIdx = -1;
+  if (activeTab === "today") render();
+}
+function addGuideSentence(s) {
+  const i = guide.sentences.length;
+  guide.sentences.push(s);
+  refreshTranscript();
+  if (speech.supported) {
+    speakSentence(s,
+      () => { guide.sayingIdx = i; refreshTranscript(); },
+      () => {
+        if (guide.sayingIdx === i) { guide.sayingIdx = -1; refreshTranscript(); }
+      });
+  }
+}
+function drainGuideBuf(final) {
+  for (;;) {
+    const m = guide.buf.match(/[.!?]["')\]]?(\s+|$)/);
+    if (!m) break;
+    const cut = m.index + m[0].length;
+    const s = guide.buf.slice(0, cut).trim();
+    guide.buf = guide.buf.slice(cut);
+    if (s) addGuideSentence(s);
+  }
+  if (final && guide.buf.trim()) { addGuideSentence(guide.buf.trim()); guide.buf = ""; }
+}
+async function runGuide() {
+  const sample = sampleNS !== undefined ? sampleNS
+    : await (window.claude && window.claude.use ? window.claude.use("sample").catch(() => null) : null);
+  if (!sample) {
+    guide.err = "The voice guide needs the Claude-hosted version of this app.";
+    if (activeTab === "today") render();
+    return;
+  }
+  stopSpeaking();
+  guide.status = "running"; guide.sentences = []; guide.buf = ""; guide.sayingIdx = -1; guide.err = "";
+  guide.ctl = new AbortController();
+  if (activeTab === "today") render();
+  try {
+    await sample(guidePrompt(), {
+      modelTier: "quick",
+      signal: guide.ctl.signal,
+      onText: ({ delta }) => { guide.buf += delta; drainGuideBuf(false); },
+    });
+    drainGuideBuf(true);
+    guide.status = "done";
+  } catch (e) {
+    guide.status = "done";
+    if (e && e.code === "refused") { guide.sentences = []; stopSpeaking(); }
+    if (e && e.code !== "cancelled") guide.err = coachErrCopy(e.code);
+  }
+  guide.ctl = null;
+  if (activeTab === "today") render();
+}
+function guidePrompt() {
+  const now = new Date();
+  const lines = [];
+  lines.push(
+    "You are a warm, brief voice guide for my Atomic Habits practice. Your words will be READ ALOUD by " +
+    "text-to-speech, so write only spoken prose: short sentences, no headings, no lists, no markdown, no " +
+    "emoji, no stage directions. 100 to 160 words total.", "",
+    "Today is " + now.toDateString() + ". My data:");
+  const ids = [...new Set(state.habits.map(h => (h.identity || "").trim()).filter(Boolean))];
+  if (ids.length) lines.push("Identities I'm building: " + ids.join(", ") + ".");
+  for (const h of state.habits.filter(h => scheduledOn(h, now))) {
+    lines.push("- " + h.name + ": " + (isDone(h.id, todayIso()) ? "already done today" : "not done yet") +
+      "; chain " + streak(h) + " days" +
+      (h.twoMin ? "; two-minute start: " + h.twoMin : "") +
+      (cueSentence(h) ? "; cue: " + cueSentence(h) : ""));
+  }
+  for (const h of state.habits) {
+    if (missedYesterday(h)) lines.push("- I missed " + h.name + " yesterday — never miss twice.");
+  }
+  const unprimed = [];
+  for (const h of state.habits.filter(h => scheduledOn(h, now))) {
+    for (const s of h.env) if (!isPrimed(s.id)) unprimed.push(s.text);
+  }
+  if (unprimed.length) lines.push("Environment steps not yet done: " + unprimed.slice(0, 4).join("; ") + ".");
+  lines.push("",
+    "Greet me briefly, then walk me into the day: for each habit not yet done, give me its two-minute way " +
+    "in and what the chain stakes are. If I missed something yesterday, one firm-but-kind never-miss-twice " +
+    "line. If everything is already done, celebrate instead. Close with one line about who these votes make me.");
+  return lines.join("\n");
+}
+
+/* ================= today ================= */
+function renderToday(view) {
+  const now = new Date();
+  const dateLine = now.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
+  const todays = state.habits.filter(h => scheduledOn(h, now));
+  let html = '<p class="today-date">' + esc(dateLine) + "</p>";
+
+  if (sampleNS !== null) html += guideMarkup();
+
+  // Never-miss-twice notes
+  for (const h of state.habits) {
+    if (missedTwice(h)) {
+      html += '<div class="slip-note urgent"><span>Second miss on <b>' + esc(h.name) +
+        "</b>. Missing once is an accident; missing twice is the start of a new habit. Get back on track today.</span></div>";
+    } else if (missedYesterday(h)) {
+      html += '<div class="slip-note gentle"><span>You missed <b>' + esc(h.name) +
+        '</b> yesterday. Never miss twice.</span><button data-catchup="' + h.id + '">I actually did it</button></div>';
+    }
+  }
+
+  if (!todays.length) {
+    html += '<div class="empty"><h2>Rest day</h2><p>Nothing scheduled today. Your chains are safe.</p></div>';
+  } else {
+    html += '<div class="today-list">';
+    for (const h of todays) {
+      const done = isDone(h.id, todayIso());
+      const s = streak(h);
+      html +=
+        '<div class="habit-row' + (done ? " done-row" : "") + '">' +
+        '<button class="habit-check' + (done ? " checked" : "") + '" data-check="' + h.id +
+        '" aria-label="' + (done ? "Undo " : "Complete ") + esc(h.name) + '">✓</button>' +
+        '<div class="habit-main"><div class="habit-name">' + esc(h.name) + "</div>" +
+        '<div class="habit-sub">' +
+        (h.twoMin ? 'Just start: <span class="twomin">' + esc(h.twoMin) + "</span>" : esc(cueSentence(h) || "")) +
+        "</div></div>" +
+        '<span class="streak-chip' + (s >= 7 ? " hot" : "") + '" title="Current streak">' +
+        (s > 0 ? s + "d chain" : "no chain") + "</span></div>";
+    }
+    html += "</div>";
+    const doneCount = todays.filter(h => isDone(h.id, todayIso())).length;
+    html += '<p class="day-summary">' +
+      (doneCount === todays.length
+        ? "All " + todays.length + " done. The person you're becoming showed up today."
+        : doneCount + " of " + todays.length + " done — each one is a small vote.") + "</p>";
+  }
+  view.innerHTML = html;
+
+  view.querySelectorAll("[data-check]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const h = state.habits.find(x => x.id === btn.dataset.check);
+      const was = isDone(h.id, todayIso());
+      setDone(h.id, todayIso(), !was);
+      if (!was) {
+        toast(h.identity
+          ? '✓ A vote for <span class="serif">' + esc(h.identity) + "</span>"
+          : "✓ Vote cast. The chain grows.");
+      }
+      render();
+    });
+  });
+  view.querySelectorAll("[data-catchup]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      setDone(btn.dataset.catchup, iso(daysAgo(1)), true);
+      toast("Chain repaired.");
+      render();
+    });
+  });
+  wireGuideCard(view);
+}
+
+function cueSentence(h) {
+  if (h.stack) return "After I " + h.stack + ", I will " + lc(h.name) + ".";
+  if (h.time || h.location) {
+    return "I will " + lc(h.name) +
+      (h.time ? " at " + h.time : "") + (h.location ? " in " + h.location : "") + ".";
+  }
+  return "";
+}
+function lc(s) { return s ? s.charAt(0).toLowerCase() + s.slice(1) : s; }
+
+/* ================= habits tab ================= */
+function renderHabits(view) {
+  let html = '<div class="habits-head"><h2>' + state.habits.length + " habit" +
+    (state.habits.length === 1 ? "" : "s") + '</h2>' +
+    '<button class="btn btn-primary" id="addHabit">New habit</button></div>';
+
+  if (!state.habits.length) {
+    html += '<div class="empty"><h2>Design a habit, don’t just wish for one</h2>' +
+      "<p>Each habit here is built with the Four Laws of Behavior Change: make it obvious, attractive, easy, and satisfying.</p></div>";
+  }
+
+  for (const h of state.habits) {
+    const laws = [];
+    if (h.identity) laws.push(["Identity", "I am becoming <b>" + esc(h.identity) + "</b>."]);
+    const cue = cueSentence(h);
+    if (cue) laws.push(["1 · Obvious", esc(cue)]);
+    if (h.bundle) laws.push(["2 · Attractive", "Pair it with <b>" + esc(h.bundle) + "</b>."]);
+    if (h.twoMin) laws.push(["3 · Easy", "Two-minute version: <b>" + esc(h.twoMin) + "</b>."]);
+    laws.push(["4 · Satisfying", "Check it off and watch the chain grow — never miss twice."]);
+
+    html += '<details class="habit-card"><summary>' +
+      '<span class="habit-name">' + esc(h.name) + "</span>" +
+      '<span class="days-label">' + esc(daysLabel(h.days)) + "</span></summary>" +
+      '<div class="law-list">' +
+      laws.map(l => '<div class="law-item"><span class="law-tag">' + l[0] +
+        '</span><span class="law-text">' + l[1] + "</span></div>").join("") +
+      "</div>" +
+      '<div class="card-actions"><button class="btn btn-ghost" data-edit="' + h.id + '">Edit</button>' +
+      '<button class="btn btn-danger" data-del="' + h.id + '">Delete</button></div></details>';
+  }
+  view.innerHTML = html;
+
+  document.getElementById("addHabit").addEventListener("click", () => openHabitForm(null));
+  view.querySelectorAll("[data-edit]").forEach(b =>
+    b.addEventListener("click", () => openHabitForm(state.habits.find(h => h.id === b.dataset.edit))));
+  view.querySelectorAll("[data-del]").forEach(b =>
+    b.addEventListener("click", () => {
+      const h = state.habits.find(x => x.id === b.dataset.del);
+      if (!confirm('Delete "' + h.name + '" and its history?')) return;
+      state.habits = state.habits.filter(x => x.id !== h.id);
+      for (const k of Object.keys(state.log)) {
+        state.log[k] = state.log[k].filter(id => id !== h.id);
+        if (!state.log[k].length) delete state.log[k];
+      }
+      saveState(); render();
+    }));
+}
+
+/* ================= tracker tab ================= */
+let trackerMonth = (() => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1); })();
+
+function renderTracker(view) {
+  const y = trackerMonth.getFullYear(), m = trackerMonth.getMonth();
+  const nDays = new Date(y, m + 1, 0).getDate();
+  const label = trackerMonth.toLocaleDateString(undefined, { month: "long", year: "numeric" });
+
+  let head1 = '<tr><th class="h-name"></th>', head2 = '<tr><th class="h-name"></th>';
+  for (let d = 1; d <= nDays; d++) {
+    const date = new Date(y, m, d);
+    const isToday = iso(date) === todayIso();
+    head1 += '<th class="' + (isToday ? "today-col" : "") + '">' + DAY_NAMES[date.getDay()].charAt(0) + "</th>";
+    head2 += '<th class="' + (isToday ? "today-col" : "") + '">' + d + "</th>";
+  }
+  head1 += "</tr>"; head2 += "</tr>";
+
+  let rows = "";
+  for (const h of state.habits) {
+    rows += '<tr><td class="h-name" title="' + esc(h.name) + '">' + esc(h.name) + "</td>";
+    for (let d = 1; d <= nDays; d++) {
+      const date = new Date(y, m, d);
+      const dIso = iso(date);
+      const tip = esc(h.name) + " — " + date.toLocaleDateString();
+      if (dIso > todayIso() || dIso < h.createdAt) {
+        rows += '<td><span class="t-cell t-na"></span></td>';
+      } else if (!scheduledOn(h, date)) {
+        rows += '<td><span class="t-cell t-off" title="' + tip + ' (rest day)"></span></td>';
+      } else {
+        const done = isDone(h.id, dIso);
+        rows += '<td><button class="t-cell' + (done ? " t-done" : "") + '" data-t="' + h.id + "|" + dIso +
+          '" title="' + tip + (done ? " — done" : " — missed") +
+          '" aria-label="Toggle ' + tip + '"></button></td>';
+      }
+    }
+    rows += "</tr>";
+  }
+
+  view.innerHTML =
+    '<div class="tracker-head"><h2>' + esc(label) + "</h2>" +
+    '<div class="month-nav"><button id="prevMonth" aria-label="Previous month">‹</button>' +
+    '<button id="nextMonth" aria-label="Next month">›</button></div></div>' +
+    '<div class="tracker-scroll"><table class="tracker"><thead>' + head1 + head2 +
+    "</thead><tbody>" + rows + "</tbody></table></div>" +
+    '<p class="tracker-hint">Tap a square to mark or unmark a day — the tracker is the cue, the record, and the reward. Dots are rest days.</p>';
+
+  const scroller = view.querySelector(".tracker-scroll");
+  const todayTh = view.querySelector("th.today-col");
+  if (scroller && todayTh) {
+    scroller.scrollLeft = Math.max(0, todayTh.offsetLeft - scroller.clientWidth + 60);
+  }
+
+  document.getElementById("prevMonth").addEventListener("click", () => {
+    trackerMonth = new Date(y, m - 1, 1); render();
+  });
+  document.getElementById("nextMonth").addEventListener("click", () => {
+    trackerMonth = new Date(y, m + 1, 1); render();
+  });
+  view.querySelectorAll("[data-t]").forEach(btn =>
+    btn.addEventListener("click", () => {
+      const [id, dIso] = btn.dataset.t.split("|");
+      setDone(id, dIso, !isDone(id, dIso));
+      render();
+    }));
+}
+
+/* ================= environment tab ================= */
+const ENV_CATS = {
+  cue: { label: "Cue", add: "Make the cue visible" },
+  friction: { label: "Easy", add: "Cut the friction" },
+  hide: { label: "Hide", add: "Hide the temptation" },
+};
+const envAI = { status: "idle", items: [], err: "", ctl: null };
+
+function isPrimed(stepId) {
+  const day = state.prime[todayIso()];
+  return !!(day && day.indexOf(stepId) !== -1);
+}
+function setPrimed(stepId, on) {
+  let day = state.prime[todayIso()] || [];
+  if (on && day.indexOf(stepId) === -1) day = day.concat(stepId);
+  if (!on) day = day.filter(id => id !== stepId);
+  if (day.length) state.prime[todayIso()] = day; else delete state.prime[todayIso()];
+  saveState();
+}
+
+function renderEnv(view) {
+  let html = "";
+
+  // --- daily priming checklist ---
+  const now = new Date();
+  const primeSteps = [];
+  for (const h of state.habits) {
+    if (!scheduledOn(h, now)) continue;
+    for (const s of h.env) primeSteps.push({ habit: h, step: s });
+  }
+  html += '<div class="env-card"><h3>Prime today’s environment</h3>' +
+    "<p>Set the stage before willpower is needed. Reset each day.</p>";
+  if (!primeSteps.length) {
+    html += '<p class="coach-note">No setup steps yet — design them per habit below, or ask for suggestions.</p>';
+  } else {
+    for (const { habit, step } of primeSteps) {
+      const on = isPrimed(step.id);
+      html += '<div class="prime-row' + (on ? " primed" : "") + '">' +
+        '<button class="prime-check' + (on ? " checked" : "") + '" data-prime="' + step.id +
+        '" aria-label="Toggle ' + esc(step.text) + '">✓</button>' +
+        '<span class="prime-text">' + esc(step.text) + "</span>" +
+        '<span class="prime-habit">' + esc(habit.name) + "</span></div>";
+    }
+    const doneN = primeSteps.filter(p => isPrimed(p.step.id)).length;
+    if (doneN === primeSteps.length) {
+      html += '<p class="prime-done-note">Environment primed. The good habits are now the path of least resistance.</p>';
+    }
+  }
+  html += "</div>";
+
+  // --- per-habit environment designer ---
+  html += '<div class="env-card"><h3>Design each habit’s environment</h3>' +
+    "<p>Make the cues of good habits obvious, the actions frictionless, and the temptations invisible.</p>";
+  for (const h of state.habits) {
+    html += '<div class="env-habit"><div class="habit-name">' + esc(h.name) + "</div>";
+    for (const s of h.env) {
+      const cat = ENV_CATS[s.cat] || ENV_CATS.cue;
+      html += '<div class="env-step"><span class="cat-chip cat-' + esc(s.cat) + '">' + cat.label + "</span>" +
+        '<span class="step-text">' + esc(s.text) + "</span>" +
+        '<button class="step-del" data-delstep="' + h.id + "|" + s.id +
+        '" aria-label="Remove step">×</button></div>';
+    }
+    html += '<div class="env-add"><select data-cat="' + h.id + '">' +
+      Object.keys(ENV_CATS).map(k => '<option value="' + k + '">' + ENV_CATS[k].add + "</option>").join("") +
+      '</select><input type="text" data-steptext="' + h.id +
+      '" placeholder="e.g. Put my running shoes by the door">' +
+      '<button class="btn btn-ghost" data-addstep="' + h.id + '">Add</button></div></div>';
+  }
+  html += "</div>";
+
+  // --- AI optimizer ---
+  html += '<div class="env-card"><h3>Optimize with Claude</h3>';
+  if (sampleNS === null) {
+    html += '<p class="coach-note">AI suggestions are available when this app runs as a Claude artifact.</p>';
+  } else {
+    html += "<p>Claude looks at your habits, where they slip, and your spaces, then suggests specific " +
+      "environment tweaks you can add with one tap.</p>" +
+      '<textarea class="space-note" id="spaceNote" placeholder="Optional: describe your spaces in a line or two — e.g. small apartment, desk in the bedroom, phone charges on my nightstand.">' +
+      esc(state.spaceNote) + "</textarea>" +
+      '<div class="coach-actions">' +
+      (envAI.status === "running"
+        ? '<button class="btn btn-ghost" id="envStop">Stop</button><span class="coach-note">Studying your setup…</span>'
+        : '<button class="btn btn-primary" id="envGo">Suggest optimizations</button>') +
+      "</div>";
+    if (envAI.items.length) {
+      html += "<div>";
+      for (let i = 0; i < envAI.items.length; i++) {
+        const it = envAI.items[i];
+        const cat = ENV_CATS[it.cat] || ENV_CATS.cue;
+        html += '<div class="suggestion' + (it.added ? " added" : "") + '">' +
+          '<span class="cat-chip cat-' + esc(it.cat) + '">' + cat.label + "</span>" +
+          '<span class="step-text">' + esc(it.text) +
+          '<span class="for-habit">for ' + esc(it.habitName) + "</span></span>" +
+          (it.added ? '<span class="coach-note">Added</span>'
+                    : '<button class="btn btn-ghost" data-adopt="' + i + '">Add</button>') +
+          "</div>";
+      }
+      html += "</div>";
+    }
+    if (envAI.err) html += '<p class="coach-err">' + esc(envAI.err) + "</p>";
+  }
+  html += "</div>";
+
+  view.innerHTML = html;
+
+  view.querySelectorAll("[data-prime]").forEach(btn =>
+    btn.addEventListener("click", () => {
+      setPrimed(btn.dataset.prime, !isPrimed(btn.dataset.prime));
+      render();
+    }));
+  view.querySelectorAll("[data-addstep]").forEach(btn =>
+    btn.addEventListener("click", () => addEnvStep(btn.dataset.addstep)));
+  view.querySelectorAll("[data-steptext]").forEach(inp =>
+    inp.addEventListener("keydown", e => { if (e.key === "Enter") addEnvStep(inp.dataset.steptext); }));
+  view.querySelectorAll("[data-delstep]").forEach(btn =>
+    btn.addEventListener("click", () => {
+      const [hid, sid] = btn.dataset.delstep.split("|");
+      const h = state.habits.find(x => x.id === hid);
+      if (h) h.env = h.env.filter(s => s.id !== sid);
+      saveState(); render();
+    }));
+  const note = document.getElementById("spaceNote");
+  if (note) note.addEventListener("change", () => { state.spaceNote = note.value.trim(); saveState(); });
+  const go = document.getElementById("envGo");
+  if (go) go.addEventListener("click", runEnvAI);
+  const stop = document.getElementById("envStop");
+  if (stop) stop.addEventListener("click", () => { if (envAI.ctl) envAI.ctl.abort(); });
+  view.querySelectorAll("[data-adopt]").forEach(btn =>
+    btn.addEventListener("click", () => {
+      const it = envAI.items[Number(btn.dataset.adopt)];
+      const h = state.habits.find(x => x.id === it.habitId);
+      if (h && !it.added) {
+        h.env.push({ id: uid(), text: it.text, cat: it.cat });
+        it.added = true;
+        saveState(); render();
+      }
+    }));
+}
+
+function addEnvStep(habitId) {
+  const inp = document.querySelector('[data-steptext="' + habitId + '"]');
+  const sel = document.querySelector('[data-cat="' + habitId + '"]');
+  const text = inp.value.trim();
+  if (!text) { inp.focus(); return; }
+  const h = state.habits.find(x => x.id === habitId);
+  h.env.push({ id: uid(), text, cat: sel.value });
+  saveState(); render();
+}
+
+async function runEnvAI() {
+  const sample = sampleNS !== undefined ? sampleNS
+    : await (window.claude && window.claude.use ? window.claude.use("sample").catch(() => null) : null);
+  if (!sample) { sampleNS = null; render(); return; }
+
+  const note = document.getElementById("spaceNote");
+  if (note) { state.spaceNote = note.value.trim(); saveState(); }
+
+  envAI.status = "running"; envAI.err = ""; envAI.ctl = new AbortController();
+  render();
+  try {
+    const items = await sample.json(envPrompt(), { signal: envAI.ctl.signal });
+    if (!Array.isArray(items)) throw { code: "invalid_json", message: "not an array" };
+    envAI.items = items
+      .map(it => {
+        const h = state.habits.find(x => x.id === String(it.habitId));
+        const cat = ["cue", "friction", "hide"].indexOf(String(it.cat)) !== -1 ? String(it.cat) : "cue";
+        return h && it.step ? { habitId: h.id, habitName: h.name, cat, text: String(it.step).slice(0, 200), added: false } : null;
+      })
+      .filter(Boolean);
+    envAI.status = "done";
+    if (!envAI.items.length) envAI.err = "No usable suggestions came back — try adding a note about your spaces.";
+  } catch (e) {
+    envAI.status = "done";
+    envAI.err = e && e.code === "cancelled" ? "" :
+      e && e.code === "invalid_json" ? "Claude’s reply didn’t parse — try again." :
+      coachErrCopy(e && e.code);
+    if (e && (e.code === "not_granted" || e.code === "sampling_disabled" ||
+              e.code === "not_declared" || e.code === "capability_disabled")) {
+      sampleNS = null; envAI.err = "";
+    }
+  }
+  envAI.ctl = null;
+  if (activeTab === "env") render();
+}
+
+function envPrompt() {
+  const lines = [];
+  lines.push(
+    "You are an environment-design coach applying Atomic Habits by James Clear: environment beats willpower. " +
+    "Good habits need visible cues and low friction; bad habits and distractions should be invisible and hard.",
+    "",
+    "My habits and how they're going:");
+  for (const h of state.habits) {
+    const t = totals(h);
+    lines.push("- habitId " + h.id + ": " + h.name +
+      (h.location ? " (happens in " + h.location + ")" : "") +
+      (h.twoMin ? "; two-minute version: " + h.twoMin : "") +
+      "; kept " + t.done + " of " + t.scheduled + " scheduled days" +
+      (h.env.length ? "; existing setup steps: " + h.env.map(s => s.text).join(" / ") : "; no setup steps yet"));
+  }
+  if (state.spaceNote) lines.push("", "My spaces: " + state.spaceNote);
+  lines.push("",
+    "Suggest 1-2 environment tweaks per habit, prioritizing habits I keep least. Each must be a concrete " +
+    "one-line physical action I could do tonight (place, move, hide, prepare something) — not advice, not " +
+    "a repeat of my existing steps. Reply with ONLY a JSON array of objects " +
+    '{"habitId": string (from above), "cat": "cue"|"friction"|"hide", "step": string}. ' +
+    'Example: [{"habitId":"abc","cat":"cue","step":"Put the book on your pillow when you make the bed"}]');
+  return lines.join("\n");
+}
+
+/* ================= coach tab ================= */
+let sampleNS; // undefined = still resolving, null = unavailable in this context
+(window.claude && window.claude.use ? window.claude.use("sample") : Promise.resolve(null))
+  .then(ns => { sampleNS = ns; if (activeTab === "coach" || activeTab === "today") render(); })
+  .catch(() => { sampleNS = null; if (activeTab === "coach" || activeTab === "today") render(); });
+
+const coach = { status: "idle", text: "", err: "", ctl: null }; // survives tab switches
+
+function renderCoach(view) {
+  let html = '<div class="coach-card"><h3>Your habit coach</h3>' +
+    "<p>Claude reads your habit designs and your last four weeks of check-ins, then gives feedback " +
+    "the way the book would: which law to adjust, what patterns your data shows, and what to stack next.</p>";
+
+  if (sampleNS === null) {
+    html += '<p class="coach-note">AI coaching is available when this app runs as a Claude artifact. ' +
+      "Running as a plain file or static site, everything else works — this tab just sits out.</p>";
+  } else {
+    html += '<div class="coach-actions">' +
+      (coach.status === "running"
+        ? '<button class="btn btn-ghost" id="coachStop">Stop</button><span class="coach-note">Reading your chains…</span>'
+        : '<button class="btn btn-primary" id="coachGo">' +
+          (coach.text ? "Coach me again" : "Coach me") + "</button>" +
+          (coach.text && speech.supported ? '<button class="btn btn-ghost" id="coachSpeak">🔊 Read aloud</button>' : "") +
+          '<span class="coach-note">Uses your Claude account; you’ll be asked once.</span>') +
+      "</div>";
+  }
+  html += '<div class="coach-out" id="coachOut"></div>' +
+    (coach.err ? '<p class="coach-err">' + esc(coach.err) + "</p>" : "") +
+    "</div>";
+  view.innerHTML = html;
+
+  const out = document.getElementById("coachOut");
+  if (coach.status === "running" && !coach.text) out.innerHTML = '<p class="thinking">Thinking…</p>';
+  else if (coach.text) out.innerHTML = mdLite(coach.text);
+
+  const go = document.getElementById("coachGo");
+  if (go) go.addEventListener("click", runCoach);
+  const stop = document.getElementById("coachStop");
+  if (stop) stop.addEventListener("click", () => { if (coach.ctl) coach.ctl.abort(); });
+  const speak = document.getElementById("coachSpeak");
+  if (speak) speak.addEventListener("click", () => {
+    stopSpeaking();
+    const plain = coach.text.replace(/^##\s*/gm, "").replace(/\*\*/g, "").replace(/^-\s*/gm, "");
+    for (const part of plain.split(/\n+/)) if (part.trim()) speakSentence(part.trim());
+  });
+}
+
+async function runCoach() {
+  const sample = sampleNS !== undefined ? sampleNS
+    : await (window.claude && window.claude.use ? window.claude.use("sample").catch(() => null) : null);
+  if (!sample) { sampleNS = null; render(); return; }
+
+  coach.status = "running"; coach.text = ""; coach.err = ""; coach.ctl = new AbortController();
+  render();
+  try {
+    const { text, truncated } = await sample(coachPrompt(), {
+      signal: coach.ctl.signal,
+      onText: ({ text }) => {
+        coach.text = text;
+        const out = document.getElementById("coachOut");
+        if (out) out.innerHTML = mdLite(text);
+      },
+    });
+    coach.text = text;
+    if (truncated) coach.err = "The answer was cut short — try again for the rest.";
+    coach.status = "done";
+  } catch (e) {
+    coach.text = e && e.text ? e.text : coach.text;
+    coach.status = "done";
+    coach.err = coachErrCopy(e && e.code);
+    if (e && e.code === "cancelled") coach.err = "";
+    if (e && (e.code === "not_granted" || e.code === "sampling_disabled" ||
+              e.code === "not_declared" || e.code === "capability_disabled")) {
+      sampleNS = null; coach.err = "";
+    }
+    if (e && e.code === "refused") coach.text = "";
+  }
+  coach.ctl = null;
+  if (activeTab === "coach") render();
+}
+
+function coachErrCopy(code) {
+  switch (code) {
+    case "rate_limited": return "Claude is busy or you’ve hit your usage limit — try again in a bit.";
+    case "session_expired": return "Your Claude session expired — sign in again, then retry.";
+    case "refused": return "Claude declined that request. Try again after your data changes.";
+    case "prompt_too_large": return "Too much history to send at once — this shouldn’t happen; try again.";
+    default: return "Something went wrong reaching Claude. Your data is fine — try again.";
+  }
+}
+
+function coachPrompt() {
+  const lines = [];
+  lines.push(
+    "You are a warm, direct habit coach applying the system from Atomic Habits by James Clear: " +
+    "identity-based habits, the Four Laws (make it obvious, attractive, easy, satisfying), habit stacking, " +
+    "implementation intentions, the two-minute rule, and never miss twice.",
+    "",
+    "Here is my real data from my habit tracker as of " + new Date().toDateString() + ":", "");
+  for (const h of state.habits) {
+    const t = totals(h);
+    lines.push("HABIT: " + h.name);
+    if (h.identity) lines.push("  identity: becoming " + h.identity);
+    const cue = cueSentence(h);
+    if (cue) lines.push("  cue: " + cue);
+    if (h.twoMin) lines.push("  two-minute version: " + h.twoMin);
+    if (h.bundle) lines.push("  temptation bundle: " + h.bundle);
+    lines.push("  schedule: " + daysLabel(h.days));
+    lines.push("  current chain: " + streak(h) + ", best: " + bestStreak(h) +
+      ", kept " + t.done + " of " + t.scheduled + " scheduled days since " + h.createdAt);
+    const recent = [];
+    for (let i = 27; i >= 0; i--) {
+      const d = daysAgo(i);
+      if (iso(d) < h.createdAt || !scheduledOn(h, d)) continue;
+      recent.push(DAY_NAMES[d.getDay()] + " " + iso(d).slice(5) + ":" + (isDone(h.id, iso(d)) ? "done" : "missed"));
+    }
+    if (recent.length) lines.push("  last 4 weeks (scheduled days): " + recent.join(", "));
+    lines.push("");
+  }
+  lines.push(
+    "Coach me. Keep it under 300 words, specific to MY data — quote my actual cues, identities, and numbers. " +
+    "Structure the reply exactly as: '## How it's going' (2-3 sentences), " +
+    "'## Habit by habit' (one bullet per habit: what's working or which of the Four Laws to adjust, with one concrete change), " +
+    "'## Patterns' (only if the day-of-week data shows one), " +
+    "'## Stack next' (one or two new habit suggestions that stack onto my existing routines, phrased as 'After I X, I will Y'). " +
+    "Use only ## headings, - bullets, and **bold**. No preamble, no sign-off.");
+  return lines.join("\n");
+}
+
+/* Renders the small markdown subset the coach prompt asks for. */
+function mdLite(text) {
+  const out = [];
+  let list = null;
+  const flush = () => { if (list) { out.push("<ul>" + list.join("") + "</ul>"); list = null; } };
+  for (const raw of esc(text).split("\n")) {
+    const line = raw.trim();
+    const inline = s => s.replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>");
+    if (line.startsWith("## ")) { flush(); out.push("<h4>" + inline(line.slice(3)) + "</h4>"); }
+    else if (line.startsWith("- ")) { (list = list || []).push("<li>" + inline(line.slice(2)) + "</li>"); }
+    else if (line) { flush(); out.push("<p>" + inline(line) + "</p>"); }
+    else flush();
+  }
+  flush();
+  return out.join("");
+}
+
+/* ================= progress tab ================= */
+function renderProgress(view) {
+  let html = "";
+  for (const h of state.habits) {
+    const t = totals(h);
+    const pct = t.scheduled ? Math.round((t.done / t.scheduled) * 100) : 0;
+    html += '<div class="progress-card">' +
+      '<div class="progress-top"><span class="habit-name">' + esc(h.name) + "</span>" +
+      '<span class="days-label">' + esc(daysLabel(h.days)) + "</span></div>" +
+      '<div class="stat-row">' +
+      '<span class="stat"><b>' + streak(h) + "</b>current chain</span>" +
+      '<span class="stat"><b>' + bestStreak(h) + "</b>best chain</span>" +
+      '<span class="stat"><b>' + t.done + "</b>votes cast</span>" +
+      '<span class="stat"><b>' + pct + "%</b>kept</span></div>" +
+      '<div class="heatmap-scroll"><div class="heatmap">' + heatmapCells(h) + "</div></div></div>";
+  }
+
+  const totalVotes = state.habits.reduce((n, h) => n + totals(h).done, 0);
+  html += '<div class="progress-card compound-card"><h3>The compounding curve</h3>' +
+    "<p>1% better every day for a year is 1.01<sup>365</sup> ≈ 37×. 1% worse is 0.99<sup>365</sup> ≈ 0.03. " +
+    "Habits are the compound interest of self-improvement — you’ve made <b>" + totalVotes +
+    "</b> deposit" + (totalVotes === 1 ? "" : "s") +
+    ' so far.</p><canvas id="compoundChart"></canvas></div>';
+
+  view.innerHTML = html;
+  drawCompound(totalVotes);
+}
+
+function heatmapCells(h) {
+  // 15 weeks, columns = weeks, rows = Sun..Sat, ending this week.
+  const today = new Date();
+  const end = new Date(today); end.setDate(end.getDate() + (6 - end.getDay())); // this week's Saturday
+  const start = new Date(end); start.setDate(start.getDate() - (15 * 7 - 1));
+  let cells = "";
+  for (let w = 0; w < 15; w++) {
+    for (let r = 0; r < 7; r++) {
+      const d = new Date(start); d.setDate(start.getDate() + w * 7 + r);
+      const dIso = iso(d);
+      let cls = "", tip = d.toLocaleDateString();
+      if (dIso > todayIso()) cls = "future";
+      else if (dIso < h.createdAt) cls = "future";
+      else if (!scheduledOn(h, d)) cls = "off";
+      else if (isDone(h.id, dIso)) { cls = "hit"; tip += " — done"; }
+      else tip += " — missed";
+      cells += '<i class="' + cls + '" title="' + esc(tip) + '"></i>';
+    }
+  }
+  return cells;
+}
+
+function drawCompound(votes) {
+  const canvas = document.getElementById("compoundChart");
+  if (!canvas) return;
+  const css = getComputedStyle(document.documentElement);
+  const W = canvas.clientWidth, H = canvas.clientHeight || 180;
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = W * dpr; canvas.height = H * dpr;
+  const ctx = canvas.getContext("2d");
+  ctx.scale(dpr, dpr);
+  const pad = { l: 8, r: 8, t: 12, b: 18 };
+  const days = 365, maxY = Math.pow(1.01, days);
+  const X = x => pad.l + (x / days) * (W - pad.l - pad.r);
+  const Y = y => H - pad.b - (Math.log(Math.max(y, 0.02)) - Math.log(0.02)) / (Math.log(maxY) - Math.log(0.02)) * (H - pad.t - pad.b);
+
+  ctx.strokeStyle = css.getPropertyValue("--line").trim();
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(pad.l, Y(1)); ctx.lineTo(W - pad.r, Y(1)); ctx.stroke();
+
+  function curve(rate, color) {
+    ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.beginPath();
+    for (let x = 0; x <= days; x += 2) {
+      const px = X(x), py = Y(Math.pow(rate, x));
+      x === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+  }
+  const good = css.getPropertyValue("--done").trim();
+  const bad = css.getPropertyValue("--danger").trim();
+  curve(1.01, good);
+  curve(0.99, bad);
+
+  const ink = css.getPropertyValue("--ink-soft").trim();
+  ctx.fillStyle = ink;
+  ctx.font = "11px 'Instrument Sans', sans-serif";
+  ctx.fillText("1% better → 37×", X(days) - 92, Y(Math.pow(1.01, days)) + 14);
+  ctx.fillText("1% worse → ~0", X(days) - 84, Y(0.03) - 6);
+  ctx.fillText("day 0", pad.l, H - 5);
+  ctx.fillText("day 365", W - pad.r - 42, H - 5);
+
+  // marker: where you are on the curve, by votes cast (capped at 365)
+  if (votes > 0) {
+    const vx = Math.min(votes, days);
+    ctx.fillStyle = css.getPropertyValue("--accent").trim();
+    ctx.beginPath(); ctx.arc(X(vx), Y(Math.pow(1.01, vx)), 4, 0, Math.PI * 2); ctx.fill();
+    ctx.fillText("you", X(vx) + 7, Y(Math.pow(1.01, vx)) - 4);
+  }
+}
+
+/* ================= habit form ================= */
+function openHabitForm(existing) {
+  const h = existing || { name: "", identity: "", time: "", location: "", stack: "", bundle: "", twoMin: "", days: [0, 1, 2, 3, 4, 5, 6] };
+  const days = new Set(h.days);
+  const root = document.getElementById("modalRoot");
+  root.innerHTML =
+    '<div class="overlay"><div class="modal" role="dialog" aria-modal="true">' +
+    "<h2>" + (existing ? "Edit habit" : "Design a habit") + "</h2>" +
+    '<p class="modal-sub">Built with the Four Laws of Behavior Change.</p>' +
+
+    '<div class="field"><label for="fName">Habit</label>' +
+    '<input type="text" id="fName" placeholder="e.g. Go for a run" value="' + esc(h.name) + '"></div>' +
+
+    '<div class="law-section"><div class="law-head">Identity — who does this make you?</div>' +
+    '<div class="field"><label for="fIdentity">I am becoming…</label>' +
+    '<input type="text" id="fIdentity" placeholder="e.g. a runner" value="' + esc(h.identity) + '">' +
+    '<div class="hint">The goal isn’t to run a marathon; it’s to become a runner. Every completion is a vote.</div></div></div>' +
+
+    '<div class="law-section"><div class="law-head">Law 1 · Make it obvious</div>' +
+    '<div class="field"><label for="fStack">Habit stack — after I… (optional)</label>' +
+    '<input type="text" id="fStack" placeholder="e.g. pour my morning coffee" value="' + esc(h.stack) + '"></div>' +
+    '<div class="field"><label for="fTime">Or an implementation intention — when &amp; where (optional)</label>' +
+    '<input type="text" id="fTime" placeholder="Time, e.g. 7:00 am" value="' + esc(h.time) + '">' +
+    '<input type="text" id="fLocation" placeholder="Place, e.g. the park" value="' + esc(h.location) + '" style="margin-top:6px">' +
+    '<div class="sentence-preview" id="cuePreview"></div></div></div>' +
+
+    '<div class="law-section"><div class="law-head">Law 2 · Make it attractive</div>' +
+    '<div class="field"><label for="fBundle">Temptation bundle — pair it with something you enjoy (optional)</label>' +
+    '<input type="text" id="fBundle" placeholder="e.g. my favorite podcast" value="' + esc(h.bundle) + '"></div></div>' +
+
+    '<div class="law-section"><div class="law-head">Law 3 · Make it easy</div>' +
+    '<div class="field"><label for="fTwoMin">Two-minute version</label>' +
+    '<input type="text" id="fTwoMin" placeholder="e.g. Put on my running shoes" value="' + esc(h.twoMin) + '">' +
+    '<div class="hint">Scale it down until it takes two minutes. Master showing up first.</div></div></div>' +
+
+    '<div class="law-section"><div class="law-head">Law 4 · Make it satisfying</div>' +
+    '<div class="field"><label>Schedule — never break the chain on these days</label>' +
+    '<div class="day-picker" id="dayPicker">' +
+    DAY_NAMES.map((n, i) => '<button type="button" data-day="' + i + '"' +
+      (days.has(i) ? ' class="on"' : "") + ">" + n.charAt(0) + "</button>").join("") +
+    "</div></div></div>" +
+
+    '<div class="modal-actions"><button class="btn btn-ghost" id="fCancel">Cancel</button>' +
+    '<button class="btn btn-primary" id="fSave">' + (existing ? "Save changes" : "Start the chain") + "</button></div>" +
+    "</div></div>";
+
+  const $ = id => document.getElementById(id);
+  function updatePreview() {
+    const tmp = {
+      name: $("fName").value.trim() || "do my habit",
+      stack: $("fStack").value.trim(), time: $("fTime").value.trim(), location: $("fLocation").value.trim(),
+    };
+    const s = cueSentence(tmp);
+    $("cuePreview").style.display = s ? "" : "none";
+    $("cuePreview").textContent = s;
+  }
+  ["fName", "fStack", "fTime", "fLocation"].forEach(id => $(id).addEventListener("input", updatePreview));
+  updatePreview();
+
+  $("dayPicker").querySelectorAll("button").forEach(b =>
+    b.addEventListener("click", () => {
+      const d = Number(b.dataset.day);
+      days.has(d) ? days.delete(d) : days.add(d);
+      b.classList.toggle("on", days.has(d));
+    }));
+
+  function close() { root.innerHTML = ""; }
+  $("fCancel").addEventListener("click", close);
+  root.querySelector(".overlay").addEventListener("click", e => { if (e.target === e.currentTarget) close(); });
+
+  $("fSave").addEventListener("click", () => {
+    const name = $("fName").value.trim();
+    if (!name) { $("fName").focus(); return; }
+    if (!days.size) { toast("Pick at least one day."); return; }
+    const data = {
+      name, identity: $("fIdentity").value.trim(),
+      stack: $("fStack").value.trim(), time: $("fTime").value.trim(), location: $("fLocation").value.trim(),
+      bundle: $("fBundle").value.trim(), twoMin: $("fTwoMin").value.trim(),
+      days: [...days].sort((a, b) => a - b),
+    };
+    if (existing) Object.assign(existing, data);
+    else state.habits.push(Object.assign({ id: uid(), createdAt: todayIso(), env: [] }, data));
+    saveState(); close();
+    if (!existing) { activeTab = "today"; syncTabs(); toast("Chain started. Show up tomorrow."); }
+    render();
+  });
+  $("fName").focus();
+}
+function syncTabs() {
+  document.querySelectorAll("nav [role=tab]").forEach(b =>
+    b.setAttribute("aria-selected", String(b.dataset.tab === activeTab)));
+}
+
+/* ================= export / import ================= */
+document.getElementById("exportBtn").addEventListener("click", () => {
+  ioModal("Export data", "Copy this somewhere safe — it’s your full history.",
+    JSON.stringify(state), null);
+});
+document.getElementById("importBtn").addEventListener("click", () => {
+  ioModal("Import data", "Paste a previous export. This replaces what’s here now.", "", raw => {
+    try {
+      const s = JSON.parse(raw);
+      if (!s || !Array.isArray(s.habits) || typeof s.log !== "object") throw new Error("bad shape");
+      state = normalizeState(s); saveState(); render();
+      toast("Imported " + s.habits.length + " habit" + (s.habits.length === 1 ? "" : "s") + ".");
+      return true;
+    } catch (e) { toast("That doesn’t look like a valid export."); return false; }
+  });
+});
+function ioModal(title, sub, value, onSubmit) {
+  const root = document.getElementById("modalRoot");
+  root.innerHTML = '<div class="overlay"><div class="modal" role="dialog" aria-modal="true">' +
+    "<h2>" + title + '</h2><p class="modal-sub">' + sub + "</p>" +
+    '<div class="field"><textarea class="io" id="ioText"></textarea></div>' +
+    '<div class="modal-actions"><button class="btn btn-ghost" id="ioCancel">Close</button>' +
+    (onSubmit ? '<button class="btn btn-primary" id="ioGo">Import</button>'
+              : '<button class="btn btn-primary" id="ioCopy">Copy</button>') +
+    "</div></div></div>";
+  const ta = document.getElementById("ioText");
+  ta.value = value;
+  const close = () => root.innerHTML = "";
+  document.getElementById("ioCancel").addEventListener("click", close);
+  root.querySelector(".overlay").addEventListener("click", e => { if (e.target === e.currentTarget) close(); });
+  if (onSubmit) {
+    document.getElementById("ioGo").addEventListener("click", () => { if (onSubmit(ta.value)) close(); });
+  } else {
+    ta.select();
+    document.getElementById("ioCopy").addEventListener("click", () => {
+      ta.select();
+      try { document.execCommand("copy"); toast("Copied."); } catch (e) { toast("Select the text and copy manually."); }
+    });
+  }
+}
+
+window.addEventListener("resize", () => { if (activeTab === "progress") render(); });
+render();
+</script>
