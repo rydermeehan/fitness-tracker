@@ -1,4 +1,7 @@
 <title>1% Better</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#f5f6f8">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#12151c">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..700&family=Instrument+Sans:ital,wght@0,400..700;1,400..700&display=swap">
 <style>
   :root {
@@ -71,13 +74,14 @@
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
   }
+  button { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
   .serif { font-family: "Newsreader", Georgia, serif; }
 
   .app { max-width: 680px; margin: 0 auto; padding: 24px 20px 80px; }
 
   /* ---------- header ---------- */
   header { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 4px; }
-  .wordmark { font-family: "Newsreader", Georgia, serif; font-weight: 600; font-size: 22px; letter-spacing: -0.01em; }
+  .wordmark { font-family: "Newsreader", Georgia, serif; font-weight: 600; font-size: 24px; letter-spacing: -0.01em; }
   .wordmark em { color: var(--accent); font-style: italic; }
   .header-tools { display: flex; gap: 4px; }
   .icon-btn {
@@ -104,16 +108,19 @@
   .identity-banner strong { color: var(--ink); font-weight: 600; }
 
   /* ---------- tabs ---------- */
-  nav { display: flex; gap: 2px; border-bottom: 1px solid var(--line); margin-bottom: 24px; overflow-x: auto; }
-  nav button { flex: none; }
-  nav button {
-    font: inherit; font-weight: 500; background: none; border: none; cursor: pointer;
-    color: var(--ink-faint); padding: 8px 14px 10px; position: relative;
+  nav {
+    display: flex; gap: 4px; margin-bottom: 24px; overflow-x: auto;
+    background: var(--surface-2); border-radius: 999px; padding: 4px;
+    scrollbar-width: none;
   }
-  nav button[aria-selected="true"] { color: var(--ink); }
-  nav button[aria-selected="true"]::after {
-    content: ""; position: absolute; left: 10px; right: 10px; bottom: -1px;
-    height: 2px; background: var(--accent);
+  nav::-webkit-scrollbar { display: none; }
+  nav button {
+    flex: none; font: inherit; font-weight: 600; font-size: 14px;
+    background: none; border: none; cursor: pointer; color: var(--ink-faint);
+    padding: 8px 15px; border-radius: 999px; -webkit-tap-highlight-color: transparent;
+  }
+  nav button[aria-selected="true"] {
+    color: var(--ink); background: var(--surface); box-shadow: var(--shadow);
   }
   nav button:focus-visible, .icon-btn:focus-visible, .habit-check:focus-visible,
   button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -189,10 +196,34 @@
   /* ---------- empty state ---------- */
   .empty {
     text-align: center; padding: 48px 24px; background: var(--surface);
-    border: 1px dashed var(--line); border-radius: 14px;
+    border: 1px dashed var(--line); border-radius: 16px;
   }
   .empty h2 { font-family: "Newsreader", Georgia, serif; font-weight: 600; font-size: 24px; margin: 0 0 8px; }
   .empty p { color: var(--ink-soft); max-width: 30em; margin: 0 auto 20px; }
+
+  /* ---------- front page hero ---------- */
+  .hero { text-align: center; padding: 16px 0 8px; }
+  .hero svg { width: min(340px, 88%); height: auto; display: block; margin: 0 auto 8px; }
+  .hero h2 {
+    font-family: "Newsreader", Georgia, serif; font-weight: 600; letter-spacing: -0.015em;
+    font-size: clamp(30px, 8.5vw, 40px); line-height: 1.12; margin: 10px 0 12px; text-wrap: balance;
+  }
+  .hero h2 em { font-style: italic; color: var(--accent); }
+  .hero > p { color: var(--ink-soft); font-size: 16px; max-width: 26em; margin: 0 auto 22px; text-wrap: balance; }
+  .btn-hero {
+    font: inherit; font-weight: 700; font-size: 16px; color: #fff; cursor: pointer;
+    border: none; border-radius: 999px; padding: 14px 30px;
+    background: linear-gradient(120deg, var(--accent), var(--done));
+    box-shadow: 0 6px 20px rgba(47, 74, 168, 0.28);
+  }
+  .btn-hero:hover { filter: brightness(1.07); }
+  .hero-feats { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 26px; }
+  .feat {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 999px;
+    padding: 8px 14px; font-size: 13px; font-weight: 500; color: var(--ink-soft);
+  }
+  .feat svg { width: 15px; height: 15px; flex: none; }
 
   /* ---------- buttons ---------- */
   .btn {
@@ -413,6 +444,22 @@
   }
   #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   #toast .serif { font-style: italic; }
+
+  /* ---------- mobile (last so it wins the cascade) ---------- */
+  @media (max-width: 640px) {
+    .app { padding: 18px 14px 72px; }
+    .habit-check { width: 36px; height: 36px; }
+    .prime-check { width: 26px; height: 26px; }
+    .t-cell { width: 24px; height: 24px; border-radius: 7px; }
+    .tracker th { min-width: 28px; }
+    .btn { padding: 11px 20px; }
+    .card-actions .btn, .env-add .btn, .suggestion .btn { padding: 8px 16px; }
+    .field input[type="text"], .field textarea, .env-add input, .env-add select,
+    .space-note, .modal textarea.io { font-size: 16px; } /* keeps iOS from zooming on focus */
+    .day-picker { width: 100%; }
+    .day-picker button { flex: 1; height: 40px; }
+    .modal { padding: 20px 16px; }
+  }
 
   @media (prefers-reduced-motion: reduce) {
     * { transition: none !important; }
@@ -651,6 +698,44 @@ function renderBanner() {
     " — <strong>" + votes + "</strong> vote" + (votes === 1 ? "" : "s") + " cast so far.";
 }
 
+/* ================= front page art ================= */
+const ICONS = {
+  check: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6.3"/><path d="M5.3 8.3l1.9 1.9 3.5-4.2"/></svg>',
+  chain: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="3" cy="8" r="1.7"/><circle cx="8" cy="8" r="1.7"/><circle cx="13" cy="8" r="1.7"/><path d="M4.7 8h1.6M9.7 8h1.6"/></svg>',
+  voice: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 6.5v3M6 4v8M9 5.5v5M12 3v10"/></svg>',
+  cloud: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4.6 11.5a3 3 0 01-.2-6A4 4 0 0112 6.7a2.6 2.6 0 01-.7 4.8z"/></svg>',
+};
+function feat(icon, label) {
+  return '<span class="feat">' + icon + esc(label) + "</span>";
+}
+function heroArt() {
+  // The compounding chain: daily votes tracing the 1% curve.
+  const pts = [[20, 190], [60, 186], [100, 180], [140, 171], [176, 159], [210, 143], [242, 121], [270, 96], [294, 68]];
+  const dots = pts.map((p, i) => {
+    const r = 3.2 + i * 0.55;
+    const fill = i < 3 ? "var(--ink-faint)" : i < 6 ? "var(--accent)" : "var(--done)";
+    return '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="' + r.toFixed(1) + '" fill="' + fill + '"' +
+      (i < 3 ? ' opacity="0.55"' : "") + "/>";
+  }).join("");
+  return '<svg viewBox="0 0 360 230" role="img" aria-label="A chain of daily habits compounding along a rising curve">' +
+    '<defs><linearGradient id="heroStroke" x1="0" y1="1" x2="1" y2="0">' +
+    '<stop offset="0" stop-color="var(--accent)"/><stop offset="1" stop-color="var(--done)"/></linearGradient>' +
+    '<linearGradient id="heroFill" x1="0" y1="0" x2="0" y2="1">' +
+    '<stop offset="0" stop-color="var(--done)" stop-opacity="0.16"/>' +
+    '<stop offset="1" stop-color="var(--accent)" stop-opacity="0"/></linearGradient></defs>' +
+    ['46', '94', '142', '190'].map(y =>
+      '<line x1="12" y1="' + y + '" x2="348" y2="' + y + '" stroke="var(--line)" stroke-width="1" stroke-dasharray="1 5"/>').join("") +
+    '<path d="M20 190 C110 184 190 165 244 120 S312 52 322 40 L322 190 Z" fill="url(#heroFill)"/>' +
+    '<path d="M20 190 C110 184 190 165 244 120 S312 52 322 40" fill="none" stroke="url(#heroStroke)" stroke-width="3" stroke-linecap="round"/>' +
+    dots +
+    '<circle cx="322" cy="40" r="11" fill="var(--done)"/>' +
+    '<path d="M317 40.5l3.4 3.4 6-7" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>' +
+    '<path d="M343 18l1.6 4.4 4.4 1.6-4.4 1.6-1.6 4.4-1.6-4.4-4.4-1.6 4.4-1.6z" fill="var(--warn)"/>' +
+    '<text x="20" y="212" font-family="Instrument Sans, sans-serif" font-size="11" fill="var(--ink-faint)">day one</text>' +
+    '<text x="340" y="212" text-anchor="end" font-family="Instrument Sans, sans-serif" font-size="11" fill="var(--ink-faint)">1.01³⁶⁵ ≈ 37×</text>' +
+    "</svg>";
+}
+
 /* ================= tabs ================= */
 let activeTab = "today";
 document.querySelectorAll("nav [role=tab]").forEach(btn => {
@@ -667,10 +752,18 @@ function render() {
   const view = document.getElementById("view");
   if (!state.habits.length && activeTab !== "habits") {
     view.innerHTML =
-      '<div class="empty"><h2>Start with one small habit</h2>' +
-      "<p>You do not rise to the level of your goals — you fall to the level of your systems. " +
-      "Build your first habit with the Four Laws, scaled down to two minutes.</p>" +
-      '<button class="btn btn-primary" id="emptyAdd">Design your first habit</button></div>';
+      '<div class="hero">' +
+      heroArt() +
+      "<h2>Tiny habits.<br><em>Remarkable</em> results.</h2>" +
+      "<p>You don’t rise to the level of your goals — you fall to the level of your systems. " +
+      "Build yours one two-minute habit at a time.</p>" +
+      '<button class="btn-hero" id="emptyAdd">Design your first habit</button>' +
+      '<div class="hero-feats">' +
+      feat(ICONS.check, "The Four Laws") +
+      feat(ICONS.chain, "Don’t break the chain") +
+      feat(ICONS.voice, "AI coach & voice guide") +
+      feat(ICONS.cloud, "Synced across devices") +
+      "</div></div>";
     document.getElementById("emptyAdd").addEventListener("click", () => openHabitForm(null));
     return;
   }
